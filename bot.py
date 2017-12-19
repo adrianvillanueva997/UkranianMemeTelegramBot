@@ -186,7 +186,7 @@ def weather(bot, update, args):
         cities = []
         cities.append(city)
         base_url = 'http://api.openweathermap.org/data/2.5/weather'
-        api_key = '5991f4bcb0884409212e0e4d6ff2c60c'  # << Get your API key (APPID) here: http://openweathermap.org/appid
+        api_key = ''  # << Get your API key (APPID) here: http://openweathermap.org/appid
         query = base_url + '?q=%s&units=metric&APPID=%s' % (city, api_key)
         try:
             response = requests.get(query)
