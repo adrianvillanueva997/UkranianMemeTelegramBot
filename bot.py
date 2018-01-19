@@ -446,7 +446,7 @@ def searchImage(bot, update, args):
 
 
 def main():
-    updater = Updater("368625073:AAHVfNuLhlW-z3SPC40Cd9Rq9MKI3w8dEv4")
+    updater = Updater("")
 
     dp = updater.dispatcher
     start_handler = CommandHandler('start', start)
