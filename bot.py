@@ -353,7 +353,12 @@ def searchImage(bot, update, args):
 
 
 def main():
+<<<<<<< HEAD
     updater = Updater("aaaaaaaaaaaaaaaaaa")
+=======
+    updater = Updater("")
+
+>>>>>>> 9fe67feafa223c1c369958cfca7a382e698b3dba
     dp = updater.dispatcher
     start_handler = CommandHandler('start', start)
     dp.add_handler(start_handler)
