@@ -5,18 +5,11 @@ import logging
 import requests
 import wikipedia
 import basc_py4chan
-import pymysql
+from sqlalchemy import create_engine
 import markovify
 import re
 from random import randint
 from lib import py8chan
-
-
-hostname = ''
-user = ''
-password = ''
-database = ''
-port = 3306
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -41,6 +34,9 @@ chan8Boards = ['pol', 'v', 'leftypol', 'b', 'tv', 'a', 'christian', 'tech', 'co'
                'strek', 'newbrit', 'test', 'zoo', 'mu', 'fit', 'mexicali', 'waifuist', 'russian', 'tijuana',
                'u', '2hu',
                'd']
+
+engine = create_engine("mysql+mysqldb://USER:" + 'PASS' + "@IP:/DATABASE?charset=utf8mb4",
+                       encoding='utf-8')
 
 
 def start(bot, update):
@@ -116,22 +112,11 @@ def randomThread(bot, update, args):
     try:
 
         query = ' '.join(args)
-
         board = basc_py4chan.Board(str(query))
-
         threadIds = board.get_all_thread_ids()
-
         threadIds = [str(id) for id in threadIds]  # need to do this so str.join below works
-
-        # print('There are', len(threadIds), 'active threads on /' + randomBoard + '/:', ', '.join(threadIds))
-
         randomThread = randint(0, (len(threadIds) - 1))
-
-        # print(threadIds[randomThread])
-
         thread = board.get_thread(int(threadIds[randomThread]))
-
-        # print('url: ' + 'http://boards.4chan.org/' + str(randomBoard) + '/thread/' + str(threadIds[randomThread]))
         for f in thread.file_objects():
             bot.send_message(chat_id=update.message.chat_id, text=(f.file_url))
             # print(' Fileurl', f.file_url)
@@ -146,29 +131,13 @@ def randomThread(bot, update, args):
 
 def randomBoard(bot, update):
     try:
-        b = basc_py4chan.get_all_boards()
-
         randomBoard = boards[randint(0, 68)]
-
         board = basc_py4chan.board(randomBoard)
-
         threadIds = board.get_all_thread_ids()
-
-        threads = []
-
         threadIds = [str(id) for id in threadIds]  # need to do this so str.join below works
-
-        # print('There are', len(threadIds), 'active threads on /' + randomBoard + '/:', ', '.join(threadIds))
-
         randomThread = randint(0, (len(threadIds) - 1))
-
-        # print(threadIds[randomThread])
-
         thread = board.get_thread(int(threadIds[randomThread]))
 
-        topic = thread.topic
-
-        # print('url: ' + 'http://boards.4chan.org/' + str(randomBoard) + '/thread/' + str(threadIds[randomThread]))
         for f in thread.file_objects():
             bot.send_message(chat_id=update.message.chat_id, text=(f.file_url))
             # print(' Fileurl', f.file_url)
@@ -188,7 +157,7 @@ def weather(bot, update, args):
         cities = []
         cities.append(city)
         base_url = 'http://api.openweathermap.org/data/2.5/weather'
-        api_key = ''  # << Get your API key (APPID) here: http://openweathermap.org/appid
+        api_key = 'aaaaaaaaaaaaaaaaaa'  # << Get your API key (APPID) here: http://openweathermap.org/appid
         query = base_url + '?q=%s&units=metric&APPID=%s' % (city, api_key)
         try:
             response = requests.get(query)
@@ -216,101 +185,30 @@ def weather(bot, update, args):
 
 def wikiRed(bot, update):
     try:
-        con = pymysql.connect(host=hostname, user=user, password=password, port=port, database=database)
-        cursor = con.cursor()
-        cursor.execute('SELECT `Text` FROM TwitterBot.WikiRed')
-        rows = cursor.fetchall()
-        tweets = []
-        for row in rows:
-            newRow = str(row).replace('(\'', '')
-            updatedRow = str(newRow).replace('\',)', '')
-            tweets.append(updatedRow)
-            # print(updatedRow)
-
-        randomIndex = randint(0, (len(tweets) - 1))
+        con = engine.connect()
+        tweets = con.execute('SELECT Text FROM Wikired_Data')
+        tweetList = []
+        for tweet in tweets:
+            tweetList.append(str(tweet['Text']))
+        text_model = markovify.NewlineText(tweetList)
+        tweet = text_model.make_short_sentence(280)
+        print(tweet)
         bot.send_message(chat_id=update.message.chat_id,
-                         text=tweets[randomIndex])
-        # print(tweets[randomIndex])
-        con.close()
+                         text=tweet)
     except Exception as exception:
         bot.send_message(chat_id=update.message.chat_id,
                          text=str(exception))
-
-
-def getShit():
-    try:
-        randomBoard = randint(0, (len(boards) - 1))
-        board = basc_py4chan.Board(boards[randomBoard])
-        threads = board.get_all_thread_ids()
-        randomThread = randint(0, len(threads))
-        thread = board.get_thread(threads[randomThread])
-        topic = thread.topic
-        cleanr = re.compile('<.*?>')
-        cleantext = re.sub(cleanr, '', topic.comment)
-        insert4ChanShitPost(cleantext)
-    except Exception as exception:
-        print(exception)
-
-
-def insert4ChanShitPost(shit):
-    try:
-        db = pymysql.connect(host=hostname, user=user, password=password, port=port, database=database)
-        cursor = db.cursor()
-        query = 'INSERT into 4chanData (Text) VALUES ' + '(\'' + shit + '\')'
-        cursor.execute(query)
-        db.commit()
-        print(shit)
-        db.close()
-    except Exception as exception:
-        print(exception)
-
-
-def shitPost(bot, update):
-    try:
-        con = pymysql.connect(host=hostname, user=user, password=password, port=port, database=database)
-        cursor = con.cursor()
-        cursor.execute('SELECT `Text` FROM TwitterBot.4chanData')
-        rows = cursor.fetchall()
-        shitPosting = []
-        for row in rows:
-            newRow = str(row).replace('(\'', '')
-            updatedRow = str(newRow).replace('\',)', '')
-            shitPosting.append(updatedRow)
-        text_model = markovify.NewlineText(shitPosting)
-        shitPostSupreme = text_model.make_short_sentence(140)
-        test = str(shitPostSupreme).replace('&gt;', '')
-        nuevoTest = str(test).replace('&#039;', '\'')
-        con.close()
-        getShit()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=nuevoTest)
-    except Exception as e:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str(e))
 
 
 def random8ChanBoard(bot, update):
     try:
 
         randomBoard = chan8Boards[randint(0, len(chan8Boards))]
-
         board = py8chan.board(randomBoard)
-
         threadIds = board.get_all_thread_ids()
-
-        threads = []
-
         threadIds = [str(id) for id in threadIds]  # need to do this so str.join below works
-
-        # print('There are', len(threadIds), 'active threads on /' + randomBoard + '/:', ', '.join(threadIds))
-
         randomThread = randint(0, (len(threadIds) - 1))
-
-        # print(threadIds[randomThread])
-
         thread = board.get_thread(int(threadIds[randomThread]))
-
-        topic = thread.topic
 
         # print('url: ' + 'http://boards.4chan.org/' + str(randomBoard) + '/thread/' + str(threadIds[randomThread]))
         for f in thread.file_objects():
@@ -331,24 +229,13 @@ def random8ChanBoard(bot, update):
 
 def random8ChanThread(bot, update, args):
     try:
-
         query = ' '.join(args)
-
         board = py8chan.Board(str(query))
-
         threadIds = board.get_all_thread_ids()
-
         threadIds = [str(id) for id in threadIds]  # need to do this so str.join below works
-
-        # print('There are', len(threadIds), 'active threads on /' + randomBoard + '/:', ', '.join(threadIds))
-
         randomThread = randint(0, (len(threadIds) - 1))
-
-        # print(threadIds[randomThread])
-
         thread = board.get_thread(int(threadIds[randomThread]))
 
-        # print('url: ' + 'http://boards.4chan.org/' + str(randomBoard) + '/thread/' + str(threadIds[randomThread]))
         for f in thread.file_objects():
             bot.send_message(chat_id=update.message.chat_id, text=(f.file_url))
             print(' Fileurl', f.file_url)
@@ -399,43 +286,63 @@ def getRawHTML(url):
 
 def getLinks(html):
     urls = []
-    url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', html)
-    print(urls)
+    url = re.findall('http[s]?:(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))*', html)
     for link in url:
-        if (str(link).__contains__('encrypted') or str(link).__contains__('google')):
+        if (str(link).__contains__('encrypted') or str(link).__contains__('google') or str(link).__contains__(
+                'blogger.com') or str(link).__contains__('gstatic.com') or str(link).__contains__('youtube') or str(
+            link).__contains__('schema.org') or str(link).__contains__('http://www.w3.org/2000/svg')):
             print('no')
         else:
             print(link)
             urls.append(link)
+    print(len(urls))
     return urls
 
 
 def getRandomPicture(images):
     try:
         randomPic = randint(0, (len(images) - 1))
-        print(randomPic)
+        # print(randomPic)
         if (images[randomPic] == None):
+            getRandomPicture(images)
+        elif (images[randomPic] == 'https:'):
+            getRandomPicture(images)
+        elif (images[randomPic] == 'Null'):
             getRandomPicture(images)
         else:
             return images[randomPic]
     except Exception as e:
         print(e)
+        findErrorPic()
+
+
+def findErrorPic():
+    files = [r'https://i.imgur.com/NhjZ3B9.jpg', r'https://i.imgur.com/n1ne6Xf.jpg', r'https://i.imgur.com/G7Vwf0z.jpg',
+             r'https://i.imgur.com/mmn8sbw.png', r'https://i.imgur.com/kVYqDWM.gif', r'https://i.imgur.com/QbfsniO.jpg',
+             r'https://i.imgur.com/QHqCH2w.jpg',
+             r'https://i.imgur.com/x0e9mRu.jpg', r'https://i.imgur.com/b1izBqW.png',
+             r'https://i.redd.it/266673dajx0z.jpg',
+             r'https://cdn.dribbble.com/users/366584/screenshots/2527274/404_1.gif',
+             r'https://cdn.dribbble.com/users/469578/screenshots/2597126/404-drib23.gif']
+    random = randint(0, len(files) - 1)
+    randomImage = files[random]
+    return randomImage
 
 
 def searchImage(bot, update, args):
     try:
-
         if (args != None):
             commandQuery = ' '.join(str(args))
             query = commandQuery.replace(' ', '%20').encode('utf-8')
             url = 'https://www.google.com/search?q=' + str(
                 query) + '&espv=2&biw=1366&bih=667&site=webhp&source=lnms&tbm=isch&sa=X&ei=XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg'
             html = getRawHTML(url)
-            getLinks(html)
             urls = getLinks(html)
-            picture = getRandomPicture(urls)
-            update.message.reply_text(picture)
-
+            if (len(urls) < 5):
+                update.message.reply_photo(findErrorPic())
+            else:
+                picture = getRandomPicture(urls)
+                update.message.reply_text(picture)
         else:
             bot.send_message(chat_id=update.message.chat_id, text='no')
 
@@ -446,8 +353,7 @@ def searchImage(bot, update, args):
 
 
 def main():
-    updater = Updater("368625073:AAHVfNuLhlW-z3SPC40Cd9Rq9MKI3w8dEv4")
-
+    updater = Updater("aaaaaaaaaaaaaaaaaa")
     dp = updater.dispatcher
     start_handler = CommandHandler('start', start)
     dp.add_handler(start_handler)
@@ -472,4 +378,5 @@ def main():
     updater.idle()
 
 
-main()
+if __name__ == '__main__':
+    main()
