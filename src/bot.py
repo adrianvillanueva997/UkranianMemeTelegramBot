@@ -1,15 +1,15 @@
 import urllib
 from urllib import request
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Job
+from telegram.ext import Updater, CommandHandler
 import logging
 import requests
 import wikipedia
 import basc_py4chan
-from sqlalchemy import create_engine
 import markovify
 import re
 from random import randint
 from lib import py8chan
+import src.config
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -35,9 +35,6 @@ chan8Boards = ['pol', 'v', 'leftypol', 'b', 'tv', 'a', 'christian', 'tech', 'co'
                'u', '2hu',
                'd']
 
-engine = create_engine("mysql+mysqldb://USER:" + 'PASS' + "@IP:/DATABASE?charset=utf8mb4",
-                       encoding='utf-8')
-
 
 def start(bot, update):
     update.message.reply_text('Pues estoy funcionando')
@@ -55,7 +52,8 @@ def error(bot, update, error):
 def sendLocation(bot, update, args):
     try:
         location = ' '.join(args)
-        GOOGLE_MAPS_API_URL = 'http://maps.googleapis.com/maps/api/geocode/json'
+
+        GOOGLE_MAPS_API_URL = src.config.GOOGLE_MAPS_API_URL = 'http://maps.googleapis.com/maps/api/geocode/json'
 
         params = {
             'address': location
@@ -91,6 +89,7 @@ def sendWikipedia(bot, update, args):
         print(exception)
         bot.send_message(chat_id=update.message.chat_id,
                          text='Search not found')
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 def check4ChanBoard(bot, update, args):
@@ -124,6 +123,7 @@ def randomThread(bot, update, args):
         update.message.reply_text('http://boards.4chan.org/' + str(query) + '/thread/' + str(threadIds[randomThread]))
 
     except Exception as exception:
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
         bot.send_message(chat_id=update.message.chat_id,
                          text=('board not found'))
@@ -147,6 +147,7 @@ def randomBoard(bot, update):
 
     except Exception as exception:
         print(exception)
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
         bot.send_message(chat_id=update.message.chat_id,
                          text=('Error'))
 
@@ -156,8 +157,8 @@ def weather(bot, update, args):
         city = ' '.join(args)
         cities = []
         cities.append(city)
-        base_url = 'http://api.openweathermap.org/data/2.5/weather'
-        api_key = 'aaaaaaaaaaaaaaaaaa'  # << Get your API key (APPID) here: http://openweathermap.org/appid
+        base_url = src.config.OPbase_url
+        api_key = src.config.OPapi_key
         query = base_url + '?q=%s&units=metric&APPID=%s' % (city, api_key)
         try:
             response = requests.get(query)
@@ -185,7 +186,7 @@ def weather(bot, update, args):
 
 def wikiRed(bot, update):
     try:
-        con = engine.connect()
+        con = src.config.engine.connect()
         tweets = con.execute('SELECT Text FROM Wikired_Data')
         tweetList = []
         for tweet in tweets:
@@ -196,6 +197,7 @@ def wikiRed(bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text=tweet)
     except Exception as exception:
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
         bot.send_message(chat_id=update.message.chat_id,
                          text=str(exception))
 
@@ -225,6 +227,7 @@ def random8ChanBoard(bot, update):
         print(exception)
         bot.send_message(chat_id=update.message.chat_id,
                          text=str(exception))
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 def random8ChanThread(bot, update, args):
@@ -249,6 +252,7 @@ def random8ChanThread(bot, update, args):
         print(exception)
         bot.send_message(chat_id=update.message.chat_id,
                          text=str(exception))
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 def list8ChanBoards(bot, update):
@@ -259,6 +263,7 @@ def list8ChanBoards(bot, update):
         print(e)
         bot.send_message(chat_id=update.message.chat_id,
                          text=str(e))
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 def list4ChanBoards(bot, update):
@@ -268,6 +273,7 @@ def list4ChanBoards(bot, update):
     except Exception as e:
         bot.send_message(chat_id=update.message.chat_id,
                          text=str(e))
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 def getRawHTML(url):
@@ -302,7 +308,6 @@ def getLinks(html):
 def getRandomPicture(images):
     try:
         randomPic = randint(0, (len(images) - 1))
-        # print(randomPic)
         if (images[randomPic] == None):
             getRandomPicture(images)
         elif (images[randomPic] == 'https:'):
@@ -350,15 +355,11 @@ def searchImage(bot, update, args):
         print(e)
         bot.send_message(chat_id=update.message.chat_id,
                          text=str(e))
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 def main():
-<<<<<<< HEAD
-    updater = Updater("aaaaaaaaaaaaaaaaaa")
-=======
-    updater = Updater("")
-
->>>>>>> 9fe67feafa223c1c369958cfca7a382e698b3dba
+    updater = Updater("368625073:AAHVfNuLhlW-z3SPC40Cd9Rq9MKI3w8dEv4")
     dp = updater.dispatcher
     start_handler = CommandHandler('start', start)
     dp.add_handler(start_handler)
