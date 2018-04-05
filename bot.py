@@ -9,7 +9,8 @@ import markovify
 import re
 from random import randint
 from lib import py8chan
-import src.config
+import src.config as config
+import dota2api
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -53,7 +54,7 @@ def sendLocation(bot, update, args):
     try:
         location = ' '.join(args)
 
-        GOOGLE_MAPS_API_URL = src.config.GOOGLE_MAPS_API_URL = 'http://maps.googleapis.com/maps/api/geocode/json'
+        GOOGLE_MAPS_API_URL = config.GOOGLE_MAPS_API_URL = 'http://maps.googleapis.com/maps/api/geocode/json'
 
         params = {
             'address': location
@@ -157,8 +158,8 @@ def weather(bot, update, args):
         city = ' '.join(args)
         cities = []
         cities.append(city)
-        base_url = src.config.OPbase_url
-        api_key = src.config.OPapi_key
+        base_url = config.OPbase_url
+        api_key = config.OPapi_key
         query = base_url + '?q=%s&units=metric&APPID=%s' % (city, api_key)
         try:
             response = requests.get(query)
@@ -184,16 +185,28 @@ def weather(bot, update, args):
                          text=str(error))
 
 
+def insertTweetQuery(tweet):
+    con = config.engine.connect()
+    tweet.replace('\'', '\'\'')
+    tweet.replace('%', '%%')
+    tweet.replace('\"', '\"\"')
+    con.execute('INSERT INTO TwitterBot.Wikired_Query (Wikired_Query.TWEET) values (\"' + tweet + '\")')
+    print('tweet insertado: ' + tweet)
+
+
 def wikiRed(bot, update):
     try:
-        con = src.config.engine.connect()
+        con = config.engine.connect()
         tweets = con.execute('SELECT Text FROM Wikired_Data')
         tweetList = []
         for tweet in tweets:
             tweetList.append(str(tweet['Text']))
-        text_model = markovify.NewlineText(tweetList)
-        tweet = text_model.make_short_sentence(280)
-        print(tweet)
+        text_model = markovify.NewlineText(tweetList, state_size=3)
+        modelJson = text_model.to_json()
+        reconstituted_model = markovify.NewlineText.from_json(modelJson)
+        tweet = reconstituted_model.make_short_sentence(280)
+        # print(tweet)
+        insertTweetQuery(tweet)
         bot.send_message(chat_id=update.message.chat_id,
                          text=tweet)
     except Exception as exception:
@@ -358,8 +371,65 @@ def searchImage(bot, update, args):
         logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
+def getProDotaGames(bot, update):
+    try:
+        api = dota2api.Initialise(config.dotaApi)
+        games = api.get_top_live_games()
+        leagues = api.get_league_listing()
+        heroes = api.get_heroes()
+
+        for game in games['game_list']:
+            league_id = game['league_id']
+            for league in leagues['leagues']:
+                if league['leagueid'] == (league_id):
+                    basic_info = (game['team_name_radiant'] + ' vs ' + game['team_name_dire'])
+                    radiant_heroes = []
+                    dire_heroes = []
+                    for player in game['players']:
+                        hero_id = player['hero_id']
+                        for heroe in heroes['heroes']:
+                            if hero_id == heroe['id']:
+                                if len(dire_heroes) != 5:
+                                    dire_heroes.append(heroe['localized_name'])
+                                else:
+                                    radiant_heroes.append(heroe['localized_name'])
+                    game_heroes = ('heroes: ', radiant_heroes, dire_heroes)
+                    league_name = (league['name'])
+                    radiant_score = game['radiant_score']
+                    dire_score = game['dire_score']
+                    time = (float(game['game_time']) / 60)
+                    format(time, '.2f')
+                    game_heroes1 = str(game_heroes).replace('(', '')
+                    game_heroes1.replace('\'])', '')
+                    game_heroes1.replace('\']', '')
+                    dotaGame = {
+                        'basic_info': basic_info,
+                        'league_name': league_name,
+                        'game_heroes': game_heroes1,
+                        'radiant_heroes': str(radiant_heroes),
+                        'dire_heroes': str(dire_heroes),
+                        'radiant_score': str(radiant_score),
+                        'dire_score': str(dire_score),
+                        'time': str(time),
+                    }
+                    bot.send_message(chat_id=update.message.chat_id,
+                                     text='> ' + dotaGame['basic_info'] + '\n' + '> Radiant:' + dotaGame[
+                                         'radiant_score'] + ' Dire: ' +
+                                          dotaGame['dire_score'] + '\n' + '> ' + dotaGame[
+                                              'league_name'] + '\n' + '> Time: ' + dotaGame[
+                                              'time'] + '\n' + '> Radiant Heroes: ' +
+                                          dotaGame[
+                                              'radiant_heroes'] + '\n' + '> Dire Heroes: ' + dotaGame['dire_heroes'])
+
+    except Exception as e:
+        print(e)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=str(e))
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
+
+
 def main():
-    updater = Updater("368625073:AAHVfNuLhlW-z3SPC40Cd9Rq9MKI3w8dEv4")
+    updater = Updater(config.updater)
     dp = updater.dispatcher
     start_handler = CommandHandler('start', start)
     dp.add_handler(start_handler)
@@ -376,6 +446,7 @@ def main():
     dp.add_handler(CommandHandler("4chanboards", list4ChanBoards))
     dp.add_handler(CommandHandler("8chanboards", list8ChanBoards, ))
     dp.add_handler(CommandHandler("get", searchImage, pass_args=True, pass_user_data=updater.last_update_id))
+    dp.add_handler(CommandHandler("dotaprogames", getProDotaGames))
 
     dp.add_error_handler(error)
 
