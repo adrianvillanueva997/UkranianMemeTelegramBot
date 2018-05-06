@@ -8,8 +8,8 @@ import basc_py4chan
 import markovify
 import re
 from random import randint
-from lib import py8chan
-import src.config as config
+from telegramBot.lib import py8chan
+import telegramBot.src.config as config
 import dota2api
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -50,26 +50,68 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
+def getCoords(args):
+    location = ' '.join(args)
+
+    GOOGLE_MAPS_API_URL = config.GOOGLE_MAPS_API_URL = 'http://maps.googleapis.com/maps/api/geocode/json'
+
+    params = {
+        'address': location
+    }
+    req = requests.get(GOOGLE_MAPS_API_URL, params=params)
+    res = req.json()
+    result = res['results'][0]
+
+    geodata = dict()
+    geodata['lat'] = result['geometry']['location']['lat']
+    geodata['lng'] = result['geometry']['location']['lng']
+    geodata['address'] = result['formatted_address']
+
+    return geodata, result
+
+
+def getTimeZone(bot, update, args):
+    try:
+        geodata, result = getCoords(args)
+        lat = geodata['lat'] = result['geometry']['location']['lat']
+        lng = geodata['lng'] = result['geometry']['location']['lng']
+        adddress = geodata['address'] = result['formatted_address']
+        ubication = adddress
+        timezone_params = {
+            'key': config.timezonekey,
+            'format': 'json',
+            'by': 'position',
+            'lat': lat,
+            'lng': lng
+        }
+        TIMEZONEDB_URL = r'http://api.timezonedb.com/v2/get-time-zone'
+        req2 = requests.get(TIMEZONEDB_URL, timezone_params)
+        print(req2)
+        response = req2.json()
+        hour = (response['formatted'])
+        zoneName = response['zoneName']
+        timeZone = response['abbreviation']
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='> Location: ' + ubication +
+                              '\n> Hour: ' + hour +
+                              '\n > Zone Name: ' + zoneName +
+                              '\n > Time Zone: ' + timeZone)
+    except Exception as e:
+        print(e)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text='Location not found')
+
+
 def sendLocation(bot, update, args):
     try:
         location = ' '.join(args)
-
-        GOOGLE_MAPS_API_URL = config.GOOGLE_MAPS_API_URL = 'http://maps.googleapis.com/maps/api/geocode/json'
-
-        params = {
-            'address': location
-        }
-        req = requests.get(GOOGLE_MAPS_API_URL, params=params)
-        res = req.json()
-
-        result = res['results'][0]
-
-        geodata = dict()
+        geodata, result = getCoords(location)
         geodata['lat'] = result['geometry']['location']['lat']
         geodata['lng'] = result['geometry']['location']['lng']
         geodata['address'] = result['formatted_address']
 
         print('{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
+
         bot.send_message(chat_id=update.message.chat_id,
                          text='{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
         bot.sendLocation(chat_id=update.message.chat_id, latitude=geodata['lat'], longitude=geodata['lng'])
@@ -98,8 +140,6 @@ def check4ChanBoard(bot, update, args):
         query = ' '.join(args)
         board = basc_py4chan.Board(query)
         thread_ids = board.get_all_thread_ids()
-        str_thread_ids = [str(id) for id in thread_ids]  # need to do this so str.join below works
-        # print('There are', len(thread_ids), 'active threads on ' + query)
         bot.send_message(chat_id=update.message.chat_id,
                          text='There are ' + str(len(thread_ids)) + ' active threads on ' + str(query))
     except Exception as exception:
@@ -186,12 +226,12 @@ def weather(bot, update, args):
 
 
 def insertTweetQuery(tweet):
-    con = config.engine.connect()
-    tweet.replace('\'', '\'\'')
-    tweet.replace('%', '%%')
-    tweet.replace('\"', '\"\"')
-    con.execute('INSERT INTO TwitterBot.Wikired_Query (Wikired_Query.TWEET) values (\"' + tweet + '\")')
-    print('tweet insertado: ' + tweet)
+    with config.engine.connect() as con:
+        tweet.replace('\'', '\'\'')
+        tweet.replace('%', '%%')
+        tweet.replace('\"', '\"\"')
+        con.execute('INSERT INTO TwitterBot.Wikired_Query (Wikired_Query.TWEET) values (\"' + tweet + '\")')
+        print('tweet insertado: ' + tweet)
 
 
 def wikiRed(bot, update):
@@ -217,7 +257,6 @@ def wikiRed(bot, update):
 
 def random8ChanBoard(bot, update):
     try:
-
         randomBoard = chan8Boards[randint(0, len(chan8Boards))]
         board = py8chan.board(randomBoard)
         threadIds = board.get_all_thread_ids()
@@ -323,10 +362,6 @@ def getRandomPicture(images):
         randomPic = randint(0, (len(images) - 1))
         if (images[randomPic] == None):
             getRandomPicture(images)
-        elif (images[randomPic] == 'https:'):
-            getRandomPicture(images)
-        elif (images[randomPic] == 'Null'):
-            getRandomPicture(images)
         else:
             return images[randomPic]
     except Exception as e:
@@ -377,6 +412,7 @@ def getProDotaGames(bot, update):
         games = api.get_top_live_games()
         leagues = api.get_league_listing()
         heroes = api.get_heroes()
+        a = []
 
         for game in games['game_list']:
             league_id = game['league_id']
@@ -412,6 +448,7 @@ def getProDotaGames(bot, update):
                         'dire_score': str(dire_score),
                         'time': str(time),
                     }
+                    a.append(dotaGame)
                     bot.send_message(chat_id=update.message.chat_id,
                                      text='> ' + dotaGame['basic_info'] + '\n' + '> Radiant:' + dotaGame[
                                          'radiant_score'] + ' Dire: ' +
@@ -420,6 +457,9 @@ def getProDotaGames(bot, update):
                                               'time'] + '\n' + '> Radiant Heroes: ' +
                                           dotaGame[
                                               'radiant_heroes'] + '\n' + '> Dire Heroes: ' + dotaGame['dire_heroes'])
+        if len(a) == 0:
+            bot.send_message(chat_id=update.message.chat_id,
+                             text='No games yet')
 
     except Exception as e:
         print(e)
@@ -429,7 +469,7 @@ def getProDotaGames(bot, update):
 
 
 def main():
-    updater = Updater(config.updater)
+    updater = Updater(config.updater, workers=4)
     dp = updater.dispatcher
     start_handler = CommandHandler('start', start)
     dp.add_handler(start_handler)
@@ -447,6 +487,7 @@ def main():
     dp.add_handler(CommandHandler("8chanboards", list8ChanBoards, ))
     dp.add_handler(CommandHandler("get", searchImage, pass_args=True, pass_user_data=updater.last_update_id))
     dp.add_handler(CommandHandler("dotaprogames", getProDotaGames))
+    dp.add_handler(CommandHandler("getTimeZone", getTimeZone, pass_args=True))
 
     dp.add_error_handler(error)
 
