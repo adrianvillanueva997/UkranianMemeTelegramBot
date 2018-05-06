@@ -56,7 +56,8 @@ def getCoords(args):
     GOOGLE_MAPS_API_URL = config.GOOGLE_MAPS_API_URL = 'http://maps.googleapis.com/maps/api/geocode/json'
 
     params = {
-        'address': location
+        'address': location,
+        'key': config.GOOGLE_MAPS_API_KEY
     }
     req = requests.get(GOOGLE_MAPS_API_URL, params=params)
     res = req.json()
