@@ -50,34 +50,49 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
-def getCoords(args):
+def get_coords(args):
     location = ' '.join(args)
 
-    GOOGLE_MAPS_API_URL = config.GOOGLE_MAPS_API_URL = 'http://maps.googleapis.com/maps/api/geocode/json'
+    GOOGLE_MAPS_API_URL = config.GOOGLE_MAPS_API_URL
 
     params = {
         'address': location,
         'key': config.GOOGLE_MAPS_API_KEY
     }
     req = requests.get(GOOGLE_MAPS_API_URL, params=params)
+    print(req)
     res = req.json()
+    print(res)
     result = res['results'][0]
+    print(result)
 
     geodata = dict()
     geodata['lat'] = result['geometry']['location']['lat']
     geodata['lng'] = result['geometry']['location']['lng']
     geodata['address'] = result['formatted_address']
+    print(geodata)
 
-    return geodata, result
+    return geodata
 
 
-def getTimeZone(bot, update, args):
+def joke(bot, update):
     try:
-        geodata, result = getCoords(args)
-        lat = geodata['lat'] = result['geometry']['location']['lat']
-        lng = geodata['lng'] = result['geometry']['location']['lng']
-        adddress = geodata['address'] = result['formatted_address']
-        ubication = adddress
+        req = requests.get(r'https://icanhazdadjoke.com/slack')
+        print(req)
+        res = req.json()
+        text = (res['attachments'][0]['text'])
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=text)
+    except Exception as e:
+        print(e)
+
+
+def get_time_zone(bot, update, args):
+    try:
+        geodata = get_coords(args)
+        lat = geodata['lat']
+        lng = geodata['lng']
+        address = geodata['address']
         timezone_params = {
             'key': config.timezonekey,
             'format': 'json',
@@ -86,31 +101,29 @@ def getTimeZone(bot, update, args):
             'lng': lng
         }
         TIMEZONEDB_URL = r'http://api.timezonedb.com/v2/get-time-zone'
-        req2 = requests.get(TIMEZONEDB_URL, timezone_params)
-        print(req2)
-        response = req2.json()
+        req = requests.get(TIMEZONEDB_URL, timezone_params)
+        print(req)
+        response = req.json()
+        print(response)
         hour = (response['formatted'])
-        zoneName = response['zoneName']
-        timeZone = response['abbreviation']
+        zone_name = response['zoneName']
+        time_zone = response['abbreviation']
+        print(hour, zone_name, time_zone)
         bot.send_message(chat_id=update.message.chat_id,
-                         text='> Location: ' + ubication +
+                         text='> Location: ' + address +
                               '\n> Hour: ' + hour +
-                              '\n > Zone Name: ' + zoneName +
-                              '\n > Time Zone: ' + timeZone)
+                              '\n > Zone Name: ' + zone_name +
+                              '\n > Time Zone: ' + time_zone)
     except Exception as e:
         print(e)
         bot.send_message(chat_id=update.message.chat_id,
                          text='Location not found')
 
 
-def sendLocation(bot, update, args):
+def send_location(bot, update, args):
     try:
         location = ' '.join(args)
-        geodata, result = getCoords(location)
-        geodata['lat'] = result['geometry']['location']['lat']
-        geodata['lng'] = result['geometry']['location']['lng']
-        geodata['address'] = result['formatted_address']
-
+        geodata = get_coords(location)
         print('{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
 
         bot.send_message(chat_id=update.message.chat_id,
@@ -124,7 +137,7 @@ def sendLocation(bot, update, args):
         print(exception)
 
 
-def sendWikipedia(bot, update, args):
+def send_wikipedia(bot, update, args):
     try:
         query = ' '.join(args)
         article = wikipedia.page(query)
@@ -136,7 +149,7 @@ def sendWikipedia(bot, update, args):
         logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
-def check4ChanBoard(bot, update, args):
+def check4_chan_board(bot, update, args):
     try:
         query = ' '.join(args)
         board = basc_py4chan.Board(query)
@@ -149,7 +162,7 @@ def check4ChanBoard(bot, update, args):
                          text='board not found')
 
 
-def randomThread(bot, update, args):
+def random_thread(bot, update, args):
     try:
 
         query = ' '.join(args)
@@ -171,7 +184,7 @@ def randomThread(bot, update, args):
                          text=('board not found'))
 
 
-def randomBoard(bot, update):
+def random_board(bot, update):
     try:
         randomBoard = boards[randint(0, 68)]
         board = basc_py4chan.board(randomBoard)
@@ -227,15 +240,18 @@ def weather(bot, update, args):
 
 
 def insertTweetQuery(tweet):
-    with config.engine.connect() as con:
-        tweet.replace('\'', '\'\'')
-        tweet.replace('%', '%%')
-        tweet.replace('\"', '\"\"')
-        con.execute('INSERT INTO TwitterBot.Wikired_Query (Wikired_Query.TWEET) values (\"' + tweet + '\")')
-        print('tweet insertado: ' + tweet)
+    try:
+        with config.engine.connect() as con:
+            tweet.replace('\'', '\'\'')
+            tweet.replace('%', '%%')
+            tweet.replace('\"', '\"\"')
+            con.execute('INSERT INTO TwitterBot.Wikired_Query (Wikired_Query.TWEET) values (\"' + tweet + '\")')
+            print('tweet insertado: ' + tweet)
+    except Exception as e:
+        print(e)
 
 
-def wikiRed(bot, update):
+def wiki_red(bot, update):
     try:
         con = config.engine.connect()
         tweets = con.execute('SELECT Text FROM Wikired_Data')
@@ -358,13 +374,13 @@ def getLinks(html):
     return urls
 
 
-def getRandomPicture(images):
+def get_random_picture(images):
     try:
-        randomPic = randint(0, (len(images) - 1))
-        if (images[randomPic] == None):
-            getRandomPicture(images)
+        random_pic = randint(0, (len(images) - 1))
+        if (images[random_pic] == None):
+            get_random_picture(images)
         else:
-            return images[randomPic]
+            return images[random_pic]
     except Exception as e:
         print(e)
         findErrorPic()
@@ -395,7 +411,7 @@ def searchImage(bot, update, args):
             if (len(urls) < 5):
                 update.message.reply_photo(findErrorPic())
             else:
-                picture = getRandomPicture(urls)
+                picture = get_random_picture(urls)
                 update.message.reply_text(picture)
         else:
             bot.send_message(chat_id=update.message.chat_id, text='no')
@@ -414,7 +430,7 @@ def getProDotaGames(bot, update):
         leagues = api.get_league_listing()
         heroes = api.get_heroes()
         a = []
-
+        # print(games)
         for game in games['game_list']:
             league_id = game['league_id']
             for league in leagues['leagues']:
@@ -439,12 +455,14 @@ def getProDotaGames(bot, update):
                     game_heroes1 = str(game_heroes).replace('(', '')
                     game_heroes1.replace('\'])', '')
                     game_heroes1.replace('\']', '')
+                    gold_lead = game['radiant_lead']
                     dotaGame = {
                         'basic_info': basic_info,
                         'league_name': league_name,
                         'game_heroes': game_heroes1,
                         'radiant_heroes': str(radiant_heroes),
                         'dire_heroes': str(dire_heroes),
+                        'gold_lead': str(gold_lead),
                         'radiant_score': str(radiant_score),
                         'dire_score': str(dire_score),
                         'time': str(time),
@@ -457,7 +475,8 @@ def getProDotaGames(bot, update):
                                               'league_name'] + '\n' + '> Time: ' + dotaGame[
                                               'time'] + '\n' + '> Radiant Heroes: ' +
                                           dotaGame[
-                                              'radiant_heroes'] + '\n' + '> Dire Heroes: ' + dotaGame['dire_heroes'])
+                                              'radiant_heroes'] + '\n' + '> Dire Heroes: ' + dotaGame['dire_heroes'] +
+                                          '\n> Gold Difference: ' + dotaGame['gold_lead'])
         if len(a) == 0:
             bot.send_message(chat_id=update.message.chat_id,
                              text='No games yet')
@@ -469,26 +488,52 @@ def getProDotaGames(bot, update):
         logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
+def simpsons_quote(bot, update):
+    try:
+        re = requests.get(r'https://frinkiac.com/api/random')
+        json_response = re.json()
+        print(re)
+        print(json_response)
+        quotes = ''
+        for quote in json_response['Subtitles']:
+            quotes += (quote['Content']) + '\n'
+
+        # base url: https://frinkiac.com/img/S09E25/812894/medium.jpg'
+        season = json_response['Frame']['Episode']
+        timestamp = json_response['Frame']['Timestamp']
+        picture = r'https://frinkiac.com/img/' + str(season) + '/' + str(timestamp) + '/medium.jpg'
+        print(picture)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=quotes)
+        bot.send_photo(chat_id=update.message.chat_id, photo=picture)
+
+    except Exception as e:
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=str(e))
+
+
 def main():
     updater = Updater(config.updater, workers=4)
     dp = updater.dispatcher
     start_handler = CommandHandler('start', start)
     dp.add_handler(start_handler)
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("locate", sendLocation, pass_args=True))
-    dp.add_handler(CommandHandler("wikipedia", sendWikipedia, pass_args=True))
-    dp.add_handler(CommandHandler("board", check4ChanBoard, pass_args=True))
-    dp.add_handler(CommandHandler("randomBoard", randomBoard))
-    dp.add_handler(CommandHandler("randomThread", randomThread, pass_args=True))
+    dp.add_handler(CommandHandler("locate", send_location, pass_args=True))
+    dp.add_handler(CommandHandler("wikipedia", send_wikipedia, pass_args=True))
+    dp.add_handler(CommandHandler("board", check4_chan_board, pass_args=True))
+    dp.add_handler(CommandHandler("randomBoard", random_board))
+    dp.add_handler(CommandHandler("randomThread", random_thread, pass_args=True))
     dp.add_handler(CommandHandler("weather", weather, pass_args=True))
-    dp.add_handler(CommandHandler("wikired", wikiRed, ))
+    dp.add_handler(CommandHandler("wikired", wiki_red, ))
     dp.add_handler(CommandHandler("8chanBoard", random8ChanBoard))
     dp.add_handler(CommandHandler("8chanThread", random8ChanThread, pass_args=True))
     dp.add_handler(CommandHandler("4chanboards", list4ChanBoards))
     dp.add_handler(CommandHandler("8chanboards", list8ChanBoards, ))
     dp.add_handler(CommandHandler("get", searchImage, pass_args=True, pass_user_data=updater.last_update_id))
     dp.add_handler(CommandHandler("dotaprogames", getProDotaGames))
-    dp.add_handler(CommandHandler("getTimeZone", getTimeZone, pass_args=True))
+    dp.add_handler(CommandHandler("getTimeZone", get_time_zone, pass_args=True))
+    dp.add_handler(CommandHandler("joke", joke))
+    dp.add_handler(CommandHandler("simpsonquote", simpsons_quote))
 
     dp.add_error_handler(error)
 
