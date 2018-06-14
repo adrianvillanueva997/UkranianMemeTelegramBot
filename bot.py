@@ -1,12 +1,13 @@
 import urllib
 from urllib import request
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, run_async
 import logging
 import requests
 import wikipedia
 import basc_py4chan
 import markovify
 import re
+import json
 from random import randint
 from telegramBot.lib import py8chan
 import telegramBot.src.config as config
@@ -75,6 +76,7 @@ def get_coords(args):
     return geodata
 
 
+@run_async
 def joke(bot, update):
     try:
         req = requests.get(r'https://icanhazdadjoke.com/slack')
@@ -87,6 +89,7 @@ def joke(bot, update):
         print(e)
 
 
+@run_async
 def get_time_zone(bot, update, args):
     try:
         geodata = get_coords(args)
@@ -120,6 +123,7 @@ def get_time_zone(bot, update, args):
                          text='Location not found')
 
 
+@run_async
 def send_location(bot, update, args):
     try:
         location = ' '.join(args)
@@ -162,6 +166,7 @@ def check4_chan_board(bot, update, args):
                          text='board not found')
 
 
+@run_async
 def random_thread(bot, update, args):
     try:
 
@@ -184,6 +189,7 @@ def random_thread(bot, update, args):
                          text=('board not found'))
 
 
+@run_async
 def random_board(bot, update):
     try:
         randomBoard = boards[randint(0, 68)]
@@ -207,6 +213,7 @@ def random_board(bot, update):
                          text=('Error'))
 
 
+@run_async
 def weather(bot, update, args):
     try:
         city = ' '.join(args)
@@ -253,6 +260,7 @@ def insertTweetQuery(tweet):
 
 def wiki_red(bot, update):
     try:
+        print('patata')
         con = config.engine.connect()
         tweets = con.execute('SELECT Text FROM Wikired_Data')
         tweetList = []
@@ -272,6 +280,7 @@ def wiki_red(bot, update):
                          text=str(exception))
 
 
+@run_async
 def random8ChanBoard(bot, update):
     try:
         randomBoard = chan8Boards[randint(0, len(chan8Boards))]
@@ -299,7 +308,8 @@ def random8ChanBoard(bot, update):
         logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
-def random8ChanThread(bot, update, args):
+@run_async
+def random8_chan_thread(bot, update, args):
     try:
         query = ' '.join(args)
         board = py8chan.Board(str(query))
@@ -399,8 +409,10 @@ def findErrorPic():
     return randomImage
 
 
+@run_async
 def searchImage(bot, update, args):
     try:
+        print('champiñon')
         if (args != None):
             commandQuery = ' '.join(str(args))
             query = commandQuery.replace(' ', '%20').encode('utf-8')
@@ -423,64 +435,120 @@ def searchImage(bot, update, args):
         logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
+@run_async
 def getProDotaGames(bot, update):
     try:
         api = dota2api.Initialise(config.dotaApi)
-        games = api.get_top_live_games()
+        games = api.get_live_league_games()
         leagues = api.get_league_listing()
         heroes = api.get_heroes()
         a = []
-        # print(games)
-        for game in games['game_list']:
+        for game in games['games']:
             league_id = game['league_id']
             for league in leagues['leagues']:
-                if league['leagueid'] == (league_id):
-                    basic_info = (game['team_name_radiant'] + ' vs ' + game['team_name_dire'])
+                league_name = (league['name'])
+                if league['leagueid'] == (league_id) and league['name'] != 'FACEIT League' and league['name']:
+                    radiant_team = ''
+                    dire_team = ''
+                    if 'radiant_team' not in game:
+                        radiant_team = 'Radiant'
+                    else:
+                        radiant_team = game['radiant_team']['team_name']
+                    if 'dire_team' not in game:
+                        dire_team = 'Dire'
+                    else:
+                        dire_team = game['dire_team']['team_name']
+                    radiant_series_win = game['radiant_series_wins']
+                    dire_series_win = game['dire_series_wins']
+                    radiant_score = 0
+                    dire_score = 0
+
+                    if 'scoreboard' not in game or 'score' not in game['scoreboard']['radiant']:
+                        radiant_score = 0
+                    else:
+                        radiant_score = game['scoreboard']['radiant']['score']
+
+                    if 'scoreboard' not in game or 'score' not in game['scoreboard']['dire']:
+                        dire_score = 0
+                    else:
+                        radiant_score = game['scoreboard']['radiant']['score']
+                    game_time = 0
+                    if 'scoreboard' not in game or 'duration' not in game['scoreboard']:
+                        game_time = 0
+                    else:
+                        game_time = game['scoreboard']['duration']
+                    radiant_net = 0
+                    dire_net = 0
+                    series = ''
+                    if game['series_type'] == 0:
+                        series = 'Non-series'
+                    elif game['series_type'] == 1:
+                        series = 'Best of 3'
+                    elif game['series_type'] == 2:
+                        series = 'Best of 5'
                     radiant_heroes = []
                     dire_heroes = []
-                    for player in game['players']:
-                        hero_id = player['hero_id']
-                        for heroe in heroes['heroes']:
-                            if hero_id == heroe['id']:
-                                if len(dire_heroes) != 5:
-                                    dire_heroes.append(heroe['localized_name'])
-                                else:
-                                    radiant_heroes.append(heroe['localized_name'])
-                    game_heroes = ('heroes: ', radiant_heroes, dire_heroes)
-                    league_name = (league['name'])
-                    radiant_score = game['radiant_score']
-                    dire_score = game['dire_score']
-                    time = (float(game['game_time']) / 60)
-                    format(time, '.2f')
-                    game_heroes1 = str(game_heroes).replace('(', '')
-                    game_heroes1.replace('\'])', '')
-                    game_heroes1.replace('\']', '')
-                    gold_lead = game['radiant_lead']
-                    dotaGame = {
-                        'basic_info': basic_info,
+                    if 'scoreboard' not in game or 'picks' not in game['scoreboard']['radiant']:
+                        radiant_heroes.append('No heroes yet')
+                    else:
+                        for hero in game['scoreboard']['radiant']['picks']:
+                            hero_id = hero['hero_id']
+                            for hero in heroes['heroes']:
+                                if hero['id'] == hero_id:
+                                    hero_name = hero['localized_name']
+                                    radiant_heroes.append(hero_name)
+                    if 'scoreboard' not in game or 'picks' not in game['scoreboard']['dire']:
+                        dire_heroes.append('No heroes yet')
+                    else:
+                        for hero in game['scoreboard']['dire']['picks']:
+                            hero_id = hero['hero_id']
+                            for hero in heroes['heroes']:
+                                if hero_id == hero['id']:
+                                    dire_heroes.append(hero['localized_name'])
+                    radiant_net = 0
+                    if 'scoreboard' not in game or 'players' not in game['scoreboard']['radiant']:
+                        radiant_net = 0
+                    else:
+                        for player in game['scoreboard']['radiant']['players']:
+                            radiant_net += float(player['net_worth'])
+                    dire_net = 0
+                    if 'scoreboard' not in game or 'players' not in game['scoreboard']['dire']:
+                        dire_net = 0
+                    else:
+                        for player in game['scoreboard']['dire']['players']:
+                            dire_net += float(player['net_worth'])
+                    game_info = {
+                        'radiant_team_name': radiant_team,
+                        'dire_team_name': dire_team,
                         'league_name': league_name,
-                        'game_heroes': game_heroes1,
-                        'radiant_heroes': str(radiant_heroes),
-                        'dire_heroes': str(dire_heroes),
-                        'gold_lead': str(gold_lead),
+                        'radiant_series_win': str(radiant_series_win),
+                        'dire_series_win': str(dire_series_win),
                         'radiant_score': str(radiant_score),
                         'dire_score': str(dire_score),
-                        'time': str(time),
+                        'radiant_heroes': str(radiant_heroes),
+                        'dire_heroes': str(dire_heroes),
+                        'total_net': str(radiant_net - dire_net),
+                        'time': str(game_time / 60),
+                        'series_type': series
                     }
-                    a.append(dotaGame)
-                    bot.send_message(chat_id=update.message.chat_id,
-                                     text='> ' + dotaGame['basic_info'] + '\n' + '> Radiant:' + dotaGame[
-                                         'radiant_score'] + ' Dire: ' +
-                                          dotaGame['dire_score'] + '\n' + '> ' + dotaGame[
-                                              'league_name'] + '\n' + '> Time: ' + dotaGame[
-                                              'time'] + '\n' + '> Radiant Heroes: ' +
-                                          dotaGame[
-                                              'radiant_heroes'] + '\n' + '> Dire Heroes: ' + dotaGame['dire_heroes'] +
-                                          '\n> Gold Difference: ' + dotaGame['gold_lead'])
+                    message = game_info['league_name'] + '\n' + game_info['radiant_team_name'] + ' vs ' + game_info[
+                        'dire_team_name'] + '\n' + 'Score: ' + \
+                              game_info['radiant_score'] + '-' + game_info['dire_score'] + '\n' + 'Series type: ' + \
+                              game_info[
+                                  'series_type'] + '\n' + 'Series Score: ' + game_info[
+                                  'radiant_series_win'] + '-' + game_info['dire_series_win'] + '\n' + 'Time: ' + \
+                              game_info[
+                                  'time'] + '\nGold Difference: ' + game_info['total_net'] + '\n' + game_info[
+                                  'radiant_team_name'] + ' Heroes: ' + \
+                              game_info['radiant_heroes'] + '\n' + game_info['dire_team_name'] + ' Heroes: ' + \
+                              game_info['dire_heroes']
+                    print(json.dumps(game_info, indent=2))
+                    a.append(message)
+                    bot.send_message(chat_id=update.message.chat_id, text=message)
+
         if len(a) == 0:
             bot.send_message(chat_id=update.message.chat_id,
                              text='No games yet')
-
     except Exception as e:
         print(e)
         bot.send_message(chat_id=update.message.chat_id,
@@ -488,6 +556,7 @@ def getProDotaGames(bot, update):
         logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
+@run_async
 def simpsons_quote(bot, update):
     try:
         re = requests.get(r'https://frinkiac.com/api/random')
@@ -503,9 +572,8 @@ def simpsons_quote(bot, update):
         timestamp = json_response['Frame']['Timestamp']
         picture = r'https://frinkiac.com/img/' + str(season) + '/' + str(timestamp) + '/medium.jpg'
         print(picture)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=quotes)
-        bot.send_photo(chat_id=update.message.chat_id, photo=picture)
+        # bot.send_message(chat_id=update.message.chat_id, text=quotes, photo=picture)
+        bot.send_photo(chat_id=update.message.chat_id, photo=picture, caption=quotes)
 
     except Exception as e:
         bot.send_message(chat_id=update.message.chat_id,
@@ -526,7 +594,7 @@ def main():
     dp.add_handler(CommandHandler("weather", weather, pass_args=True))
     dp.add_handler(CommandHandler("wikired", wiki_red, ))
     dp.add_handler(CommandHandler("8chanBoard", random8ChanBoard))
-    dp.add_handler(CommandHandler("8chanThread", random8ChanThread, pass_args=True))
+    dp.add_handler(CommandHandler("8chanThread", random8_chan_thread, pass_args=True))
     dp.add_handler(CommandHandler("4chanboards", list4ChanBoards))
     dp.add_handler(CommandHandler("8chanboards", list8ChanBoards, ))
     dp.add_handler(CommandHandler("get", searchImage, pass_args=True, pass_user_data=updater.last_update_id))
