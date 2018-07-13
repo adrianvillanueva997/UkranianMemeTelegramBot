@@ -37,15 +37,53 @@ class Wikired():
                 Tweet
 
             """
-        con = config.engine.connect()
-        tweets = con.execute('SELECT Text FROM Wikired_Data')
-        tweet_list = []
-        for tweet in tweets:
-            tweet_list.append(str(tweet['Text']))
-        text_model = markovify.NewlineText(tweet_list, state_size=3)
-        model_json = text_model.to_json()
-        reconstituted_model = markovify.NewlineText.from_json(model_json)
-        tweet = reconstituted_model.make_short_sentence(280)
-        # print(tweet)
-        self.insertTweetQuery(tweet)
-        return tweet
+        try:
+            con = config.engine.connect()
+            tweets = con.execute('SELECT Text FROM Wikired_Data')
+            tweet_list = []
+            for tweet in tweets:
+                tweet_list.append(str(tweet['Text']))
+            text_model = markovify.NewlineText(tweet_list, state_size=3)
+            model_json = text_model.to_json()
+            reconstituted_model = markovify.NewlineText.from_json(model_json)
+            tweet = reconstituted_model.make_short_sentence(280)
+            # print(tweet)
+            self.insertTweetQuery(tweet)
+            return tweet
+        except Exception as e:
+            print(e)
+
+    def wiki_bab(self):
+        """Especial thanks to Wikibab for giving me his tweets. Using markov chains, this function makes a new tweet based on his tweets
+             Parameters
+             ----------
+             args : None
+
+             Returns
+             -------
+             String
+                 Tweet
+
+             """
+        try:
+            con = config.engine.connect()
+            tweets = con.execute('SELECT Text FROM Wikibab_Data')
+            tweet_list = []
+            for tweet in tweets:
+                tweet_list.append(str(tweet['Text']))
+            text_model = markovify.NewlineText(tweet_list, state_size=2)
+            model_json = text_model.to_json()
+            reconstituted_model = markovify.NewlineText.from_json(model_json)
+            tweet = reconstituted_model.make_short_sentence(280)
+            print(tweet)
+            if tweet == None:
+                print(tweet)
+                tweet = self.wiki_bab()
+
+            self.insertTweetQuery(tweet)
+            return tweet
+
+
+        except Exception as e:
+            print('excepcion')
+            print(e)
