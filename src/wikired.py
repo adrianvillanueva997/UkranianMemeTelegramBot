@@ -76,9 +76,8 @@ class Wikired():
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
             print(tweet)
-            if tweet == None:
-                print(tweet)
-                tweet = self.wiki_bab()
+            while tweet == None:
+				tweet = reconstituted_model.make_short_sentence(280)
 
             self.insertTweetQuery(tweet)
             return tweet
