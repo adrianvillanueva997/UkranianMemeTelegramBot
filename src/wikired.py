@@ -43,11 +43,12 @@ class Wikired():
             tweet_list = []
             for tweet in tweets:
                 tweet_list.append(str(tweet['Text']))
-            text_model = markovify.NewlineText(tweet_list, state_size=3)
+            text_model = markovify.NewlineText(tweet_list, state_size=4)
             model_json = text_model.to_json()
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
-            # print(tweet)
+            while tweet == None:
+                tweet = reconstituted_model.make_short_sentence(280)
             self.insertTweetQuery(tweet)
             return tweet
         except Exception as e:
@@ -71,14 +72,13 @@ class Wikired():
             tweet_list = []
             for tweet in tweets:
                 tweet_list.append(str(tweet['Text']))
-            text_model = markovify.NewlineText(tweet_list, state_size=2)
+            text_model = markovify.NewlineText(tweet_list, state_size=4)
             model_json = text_model.to_json()
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
             print(tweet)
             while tweet == None:
-				tweet = reconstituted_model.make_short_sentence(280)
-
+                tweet = reconstituted_model.make_short_sentence(280)
             self.insertTweetQuery(tweet)
             return tweet
 
