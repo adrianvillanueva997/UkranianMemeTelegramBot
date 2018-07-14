@@ -22,7 +22,7 @@ pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
 ## Release History
 
 * 2.0.1
-    * Fixed Null Kebab
+    * Fixed Null Kebab and Wikired
 
 
 ## Meta
