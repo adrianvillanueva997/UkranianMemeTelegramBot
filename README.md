@@ -27,7 +27,7 @@ pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
 
 ## Meta
 
-[@thexiao77](https://twitter.com/thexiao77) – adrianvillanueva997@gmail.com
+[email](adrianvillanueva997@gmail.com)
 
 Distributed under the GPLV3 license. See ``LICENSE`` for more information.
 
