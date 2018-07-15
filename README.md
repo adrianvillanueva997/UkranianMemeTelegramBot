@@ -27,6 +27,7 @@ pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
 	* Added inline keyboard for randomthread
 	* Kalash(traitor) added
 	* Small fixes and optimization tweaks
+	* Added RPG module (Roll the dice)
 
 
 ## Meta
