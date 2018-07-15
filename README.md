@@ -1,5 +1,5 @@
 # UkranianMemeTelegramBot
-> Telegram [bot](t.me/Xiao_Bot) with tons of useful commands
+> Telegram [bot](https://t.me/xiao_bot) with tons of useful commands
 
 ![](ukranianmemepic.jpg)
 
