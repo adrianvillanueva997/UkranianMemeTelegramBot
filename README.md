@@ -23,6 +23,10 @@ pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
 
 * 2.0.1
     * Fixed Null Kebab and Wikired
+* 2.1
+	* Added inline keyboard for randomthread
+	* Kalash(traitor) added
+	* Small fixes and optimization tweaks
 
 
 ## Meta

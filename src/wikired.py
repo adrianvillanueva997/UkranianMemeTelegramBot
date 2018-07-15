@@ -43,7 +43,7 @@ class Wikired():
             tweet_list = []
             for tweet in tweets:
                 tweet_list.append(str(tweet['Text']))
-            text_model = markovify.NewlineText(tweet_list, state_size=4)
+            text_model = markovify.NewlineText(tweet_list, state_size=3)
             model_json = text_model.to_json()
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
@@ -72,7 +72,7 @@ class Wikired():
             tweet_list = []
             for tweet in tweets:
                 tweet_list.append(str(tweet['Text']))
-            text_model = markovify.NewlineText(tweet_list, state_size=4)
+            text_model = markovify.NewlineText(tweet_list, state_size=3)
             model_json = text_model.to_json()
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
