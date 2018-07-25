@@ -1,5 +1,5 @@
 # UkranianMemeTelegramBot
-> Telegram [bot](Xiao_Bot) with tons of useful commands
+> Telegram [bot](https://t.me/xiao_bot) with tons of useful commands
 
 ![](ukranianmemepic.jpg)
 
@@ -31,8 +31,6 @@ pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
 
 
 ## Meta
-
-[email](adrianvillanueva997@gmail.com)
 
 Distributed under the GPLV3 license. See ``LICENSE`` for more information.
 
