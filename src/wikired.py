@@ -26,7 +26,7 @@ class Wikired():
             print(e)
 
     def wiki_red(self):
-        """Especial thanks to RedMSR for giving me his tweets. Using markov chains, this function makes a new tweet based on his tweets
+        """Special thanks to RedMSR for giving me his tweets. Using markov chains, this function makes a new tweet based on his tweets
             Parameters
             ----------
             args : None
@@ -55,7 +55,7 @@ class Wikired():
             print(e)
 
     def wiki_bab(self):
-        """Especial thanks to Wikibab for giving me his tweets. Using markov chains, this function makes a new tweet based on his tweets
+        """Special thanks to Wikibab for giving me his tweets. Using markov chains, this function makes a new tweet based on his tweets
              Parameters
              ----------
              args : None
