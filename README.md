@@ -28,6 +28,14 @@ pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
 	* Kalash(traitor) added
 	* Small fixes and optimization tweaks
 	* Added RPG module (Roll the dice)
+* 2.2
+	* Reworked dota 2 live games, now it uses opendota api instead of valve's
+	* Added support to get Dota Pro Circuit minor- major schedeule
+	* Added Text to speech only for wikired
+	* Added Ukrania Today
+	* Wikired, kebab and ukrania today read the data from models instead of generating a new model with each call.
+	* Optimization stuff
+	* Some fixes
 
 
 ## Meta
