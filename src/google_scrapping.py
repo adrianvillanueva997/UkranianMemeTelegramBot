@@ -95,7 +95,7 @@ class GoogleScrapper():
                 Url
             """
         if (self.url != None):
-            command_query = ''.join(str(self.url))
+            command_query = ' '.join(str(self.url))
             query = command_query.replace(' ', '%20').encode('utf-8')
             url = 'https://www.google.com/search?q=' + str(
                 query) + '&espv=2&biw=1366&bih=667&site=webhp&source=lnms&tbm=isch&sa=X&ei=XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg'

@@ -1,8 +1,18 @@
-import telegramBot.src.config as config
+import src.config as config
 import markovify
+from gtts import gTTS
+import os
+import json
 
 
 class Wikired():
+
+    def text_to_speech(self):
+        tweet = self.wiki_red()
+        tts = gTTS(text=tweet, lang='es')
+        tts.save('ukranian_audio.mp3')
+        os.system("/home/Xiao/telegrambot/ukranian_audio.mp3")
+        return tweet
 
     def insertTweetQuery(self, tweet):
         """Inserts tweet in database
@@ -38,19 +48,37 @@ class Wikired():
 
             """
         try:
-            con = config.engine.connect()
-            tweets = con.execute('SELECT Text FROM Wikired_Data')
-            tweet_list = []
-            for tweet in tweets:
-                tweet_list.append(str(tweet['Text']))
-            text_model = markovify.NewlineText(tweet_list, state_size=3)
-            model_json = text_model.to_json()
+            model_json = self.read_json(r'/home/Xiao/telegrambot/telegramBot/src/models/model_wikired.json')
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
-            while tweet == None:
-                tweet = reconstituted_model.make_short_sentence(280)
-            self.insertTweetQuery(tweet)
-            return tweet
+            if tweet == None:
+                return "try again later :)"
+            else:
+                self.insertTweetQuery(tweet)
+                return tweet
+        except Exception as e:
+            print(e)
+
+    def ukrania_today(self):
+        """Special thanks to antena3 for giving me their tweets. Using markov chains, this function makes a new tweet based on his tweets
+            Parameters
+            ----------
+            args : None
+
+            Returns
+            -------
+            String
+                Tweet
+
+            """
+        try:
+            model_json = self.read_json(r'/home/Xiao/telegrambot/telegramBot/src/models/model_antena3.json')
+            reconstituted_model = markovify.NewlineText.from_json(model_json)
+            tweet = reconstituted_model.make_short_sentence(280)
+            if tweet == None:
+                return "try again later :)"
+            else:
+                return tweet
         except Exception as e:
             print(e)
 
@@ -67,22 +95,23 @@ class Wikired():
 
              """
         try:
-            con = config.engine.connect()
-            tweets = con.execute('SELECT Text FROM Wikibab_Data')
-            tweet_list = []
-            for tweet in tweets:
-                tweet_list.append(str(tweet['Text']))
-            text_model = markovify.NewlineText(tweet_list, state_size=3)
-            model_json = text_model.to_json()
+            model_json = self.read_json(r'/home/Xiao/telegrambot/telegramBot/src/models/model_wikibab.json')
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
             print(tweet)
-            while tweet == None:
-                tweet = reconstituted_model.make_short_sentence(280)
-            self.insertTweetQuery(tweet)
-            return tweet
-
-
+            if tweet == None:
+                return "try again later :)"
+            else:
+                self.insertTweetQuery(tweet)
+                return str(tweet)
         except Exception as e:
-            print('excepcion')
+            print(e)
+
+    def read_json(self, json_file):
+        try:
+            with open(json_file) as file:
+                data = json.loads(file.read())
+                print('reading json!')
+                return data
+        except Exception as e:
             print(e)

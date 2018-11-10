@@ -1,6 +1,6 @@
-import dota2api
-import telegramBot.src.config as config
-import json
+import requests
+from bs4 import BeautifulSoup
+import re
 
 
 def get_pro_dota_games():
@@ -14,110 +14,166 @@ def get_pro_dota_games():
         List
             String list with useful dota pro games 322
         """
-    api = dota2api.Initialise(config.dotaApi)
-    games = api.get_live_league_games()
-    leagues = api.get_league_listing()
-    heroes = api.get_heroes()
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    re = requests.get(r'https://api.opendota.com/api/live', headers)
+    re2 = requests.get(r'https://api.opendota.com/api/leagues', headers)
+    re3 = requests.get(r'https://api.opendota.com/api/heroes', headers)
+    games = re.json()
+    leagues = re2.json()
+    heroes = re3.json()
     live_games = []
-    for game in games['games']:
-        league_id = game['league_id']
-        for league in leagues['leagues']:
-            league_name = (league['name'])
-            if league['leagueid'] == (league_id) and league['name'] != 'FACEIT League':
-                radiant_team = ''
-                dire_team = ''
-                if 'radiant_team' not in game:
-                    radiant_team = 'Radiant'
-                else:
-                    radiant_team = game['radiant_team']['team_name']
-                if 'dire_team' not in game:
-                    dire_team = 'Dire'
-                else:
-                    dire_team = game['dire_team']['team_name']
-                radiant_series_win = game['radiant_series_wins']
-                dire_series_win = game['dire_series_wins']
-                radiant_score = 0
-                dire_score = 0
-                if 'scoreboard' not in game or 'score' not in game['scoreboard']['radiant']:
-                    radiant_score = 0
-                else:
-                    radiant_score = game['scoreboard']['radiant']['score']
-                if 'scoreboard' not in game or 'score' not in game['scoreboard']['dire']:
-                    dire_score = 0
-                else:
-                    dire_score = game['scoreboard']['dire']['score']
-                game_time = 0
-                if 'scoreboard' not in game or 'duration' not in game['scoreboard']:
-                    game_time = 0
-                else:
-                    game_time = game['scoreboard']['duration']
-                series = ''
-                if game['series_type'] == 0:
-                    series = 'Non-series'
-                elif game['series_type'] == 1:
-                    series = 'Best of 3'
-                elif game['series_type'] == 2:
-                    series = 'Best of 5'
-                radiant_heroes = []
-                dire_heroes = []
-                if 'scoreboard' not in game or 'picks' not in game['scoreboard']['radiant']:
-                    radiant_heroes.append('No heroes yet')
-                else:
-                    for hero in game['scoreboard']['radiant']['picks']:
-                        hero_id = hero['hero_id']
-                        for hero in heroes['heroes']:
-                            if hero['id'] == hero_id:
-                                hero_name = hero['localized_name']
-                                radiant_heroes.append(hero_name)
-                if 'scoreboard' not in game or 'picks' not in game['scoreboard']['dire']:
-                    dire_heroes.append('No heroes yet')
-                else:
-                    for hero in game['scoreboard']['dire']['picks']:
-                        hero_id = hero['hero_id']
-                        for hero in heroes['heroes']:
-                            if hero_id == hero['id']:
-                                dire_heroes.append(hero['localized_name'])
-                radiant_net = 0
-                if 'scoreboard' not in game or 'players' not in game['scoreboard']['radiant']:
-                    radiant_net = 0
-                else:
-                    for player in game['scoreboard']['radiant']['players']:
-                        radiant_net += float(player['net_worth'])
-                dire_net = 0
-                if 'scoreboard' not in game or 'players' not in game['scoreboard']['dire']:
-                    dire_net = 0
-                else:
-                    for player in game['scoreboard']['dire']['players']:
-                        dire_net += float(player['net_worth'])
-                game_info = {
-                    'radiant_team_name': radiant_team,
-                    'dire_team_name': dire_team,
-                    'league_name': league_name,
-                    'radiant_series_win': str(radiant_series_win),
-                    'dire_series_win': str(dire_series_win),
-                    'radiant_score': str(radiant_score),
-                    'dire_score': str(dire_score),
-                    'radiant_heroes': str(radiant_heroes),
-                    'dire_heroes': str(dire_heroes),
-                    'total_net': str(radiant_net - dire_net),
-                    'time': str(game_time / 60),
-                    'series_type': series
-                }
-                message = game_info['league_name'] + '\n' + game_info['radiant_team_name'] + ' vs ' + game_info[
-                    'dire_team_name'] + '\n' + 'Score: ' + \
-                          game_info['radiant_score'] + '-' + game_info['dire_score'] + '\n' + 'Series type: ' + \
-                          game_info[
-                              'series_type'] + '\n' + 'Series Score: ' + game_info[
-                              'radiant_series_win'] + '-' + game_info['dire_series_win'] + '\n' + 'Time: ' + \
-                          game_info[
-                              'time'] + '\nGold Difference: ' + game_info['total_net'] + '\n' + game_info[
-                              'radiant_team_name'] + ' Heroes: ' + \
-                          game_info['radiant_heroes'] + '\n' + game_info['dire_team_name'] + ' Heroes: ' + \
-                          game_info['dire_heroes']
-                print(json.dumps(game_info, indent=2))
-                live_games.append(message)
+    for game in games:
+        if game['league_id'] != 0:
+            league_name = ''
+            spectators = game['spectators']
+            radiant_name = ''
+            dire_name = ''
+            if 'team_name_radiant' not in game:
+                radiant_name = 'Radiant'
+            else:
+                radiant_name = game['team_name_radiant']
+            if 'team_name_dire' not in game:
+                dire_name = 'Dire'
+            else:
+                dire_name = game['team_name_dire']
+            radiant_score = game['radiant_score']
+            dire_score = game['dire_score']
+            gold_diference = game['radiant_lead']
+            radiant_heroes = []
+            dire_heroes = []
+            for league in leagues:
+                if game['league_id'] == league['leagueid']:
+                    league_name = (league['name'])
+                    if league['tier'] == 'professional':
+                        for player in game['players']:
+                            for hero in heroes:
+                                hero_name = ''
+                                if player['hero_id'] == hero['id']:
+                                    for hero in heroes:
+                                        if 'team_name' not in player:
+                                            pass
+                                        elif player['hero_id'] == hero['id']:
+                                            hero_name = (hero['localized_name'])
+                                            if player['team_name'] == radiant_name:
+                                                radiant_heroes.append(hero_name)
+                                            else:
+                                                dire_heroes.append(hero_name)
 
-    if len(live_games) == 0:
-        live_games.append('No games yet')
+                    game_dict = {
+                        'league_name': league_name,
+                        'spectators': str(spectators),
+                        'radiant_name': radiant_name,
+                        'dire_name': dire_name,
+                        'radiant_heroes': str(radiant_heroes),
+                        'dire_heroes': str(dire_heroes),
+                        'radiant_score': str(radiant_score),
+                        'dire_score': str(dire_score),
+                        'gold_difference': str(gold_diference),
 
+                    }
+                    message = game_dict['league_name'] + '\n' + game_dict['radiant_name'] + ' vs ' + game_dict[
+                        'dire_name'] \
+                              + '\n' + game_dict['radiant_score'] + ' - ' + game_dict[
+                                  'dire_score'] + '\n' + 'Gold Difference: ' + game_dict['gold_difference'] + '\n' + \
+                              game_dict['radiant_name'] + ' Heroes: ' + game_dict['radiant_heroes'] + '\n' + \
+                              game_dict['dire_name'] + ' Heroes: ' + game_dict['dire_heroes'] + '\nSpectators: ' + \
+                              game_dict['spectators']
+                    live_games.append(message)
     return live_games
+
+
+def get_dota_procircuit():
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    request = requests.get(r'https://www.dota2.com/procircuit', headers)
+    html = request.content
+    soup = BeautifulSoup(html, 'html.parser')
+    major_blocks = soup.findAll("div", {'class': 'scheduleElement major'})
+    minor_blocks = soup.findAll("div", {'class': 'scheduleElement minor'})
+    regex = r'<img class="flag" src=".*"\/>'
+    minors = []
+    majors = []
+    for minor in minor_blocks:
+        soup = BeautifulSoup(str(minor), 'html.parser')
+        date = soup.find('span', {'class': 'columnContent dateColumn'})
+        date = str(date).replace('<span class="columnContent dateColumn">', '')
+        date = date.replace('</span>', '')
+
+        location = soup.find('span', {'class': 'columnContent locationColumn'})
+        location = str(location).replace('<span class="columnContent locationColumn">', '')
+        location = location.replace('</span>', '')
+        location = re.sub(regex, '', location)
+        prize = soup.find('span', {'class': 'columnContent prizeColumn'})
+        prize = str(prize).replace('<span class="columnContent prizeColumn">', '')
+        prize = prize.replace('</span>', '')
+        points = soup.find('span', {'class': 'columnContent pointsColumn'})
+        points = str(points).replace('<span class="columnContent pointsColumn">', '')
+        points = points.replace('</span>', '')
+        organizer = soup.find('span', {'class': 'columnContent organizerColumn'})
+        organizer = str(organizer).replace(
+            '<span class="columnContent organizerColumn"><img class="tournamentLogo" src="https://steamcdn-a.akamaihd.net/apps/dota2/images/majorsminors/organizers/',
+            '')
+        organizer = organizer.replace('.png"/></span>', '')
+        organizer = organizer.replace('<span class="columnContent organizerColumn"><div class="PendingLogo">', '')
+        organizer = organizer.replace('</div></span>', '')
+        data = {
+            'date': date,
+            'location': location,
+            'prize': prize,
+            'points': points,
+            'organizer': organizer
+        }
+        minors.append(data)
+
+    for major in major_blocks:
+        soup = BeautifulSoup(str(major), 'html.parser')
+        date = soup.find('span', {'class': 'columnContent dateColumn'})
+        date = str(date).replace('<span class="columnContent dateColumn">', '')
+        date = date.replace('</span>', '')
+
+        location = soup.find('span', {'class': 'columnContent locationColumn'})
+        location = str(location).replace('<span class="columnContent locationColumn">', '')
+        location = location.replace('</span>', '')
+        location = re.sub(regex, '', location)
+        prize = soup.find('span', {'class': 'columnContent prizeColumn'})
+        prize = str(prize).replace('<span class="columnContent prizeColumn">', '')
+        prize = prize.replace('</span>', '')
+        points = soup.find('span', {'class': 'columnContent pointsColumn'})
+        points = str(points).replace('<span class="columnContent pointsColumn">', '')
+        points = points.replace('</span>', '')
+        organizer = soup.find('span', {'class': 'columnContent organizerColumn'})
+        organizer = str(organizer).replace(
+            '<span class="columnContent organizerColumn"><img class="tournamentLogo" src="https://steamcdn-a.akamaihd.net/apps/dota2/images/majorsminors/organizers/',
+            '')
+        organizer = organizer.replace('.png"/></span>', '')
+        organizer = organizer.replace('<span class="columnContent organizerColumn"><div class="PendingLogo">', '')
+        organizer = organizer.replace('</div></span>', '')
+        data = {
+            'date': date,
+            'location': location,
+            'prize': prize,
+            'points': points,
+            'organizer': organizer
+        }
+        majors.append(data)
+
+    tournaments = {
+        'minors': minors,
+        'majors': majors
+    }
+    print(tournaments)
+    message = '==MAJORS=='
+    for major in tournaments['majors']:
+        message += '\n' + major['date'] + '\n' + major['location'] + '\n' + major['prize'] + '\n' + major[
+            'points'] + '\n' + \
+                   major['organizer'] + '\n--------------'
+    message += '\n==MINORS=='
+    for minor in tournaments['minors']:
+        message += '\n' + minor['date'] + '\n' + minor['location'] + '\n' + minor['prize'] + '\n' + minor[
+            'points'] + '\n' + \
+                   minor['organizer'] + '\n--------------'
+
+    return message
+
+
+if __name__ == '__main__':
+    get_dota_procircuit()

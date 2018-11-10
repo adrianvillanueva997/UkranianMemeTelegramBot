@@ -19,6 +19,3 @@ def roll_the_dice(args):
     else:
         number = random.randint(1,float(number))
         return number
-
-
-

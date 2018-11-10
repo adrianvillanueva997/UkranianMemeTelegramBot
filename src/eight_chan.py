@@ -1,6 +1,6 @@
 from random import randint
 
-import telegramBot.lib.py8chan as py8chan
+import lib.py8chan as py8chan
 
 
 class EightChanHandler():
@@ -57,7 +57,7 @@ class EightChanHandler():
             Tuple
                 2 Strings with the thread url and caption
             """
-        query = ''.join(args)
+        query = ' '.join(args)
         board = py8chan.Board(str(query))
         thread_ids = board.get_all_thread_ids()
         thread_ids = [str(id) for id in thread_ids]  # need to do this so str.join below works
