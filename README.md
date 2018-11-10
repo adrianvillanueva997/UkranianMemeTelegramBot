@@ -55,3 +55,4 @@ Distributed under the GPLV3 license. See ``LICENSE`` for more information.
 
 * Dank_Trainer for his useful tips.
 * Yisus, thanks for spreading the bot and providing useful feedback.
+* Red, for his tweets
