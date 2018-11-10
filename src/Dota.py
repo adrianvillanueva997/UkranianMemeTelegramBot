@@ -173,7 +173,3 @@ def get_dota_procircuit():
                    minor['organizer'] + '\n--------------'
 
     return message
-
-
-if __name__ == '__main__':
-    get_dota_procircuit()
