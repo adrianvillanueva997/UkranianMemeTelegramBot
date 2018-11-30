@@ -183,4 +183,7 @@ def get_dota_procircuit():
                    minor['organizer'] + '\n--------------'
 
     return message
+<<<<<<< HEAD
 
+=======
+>>>>>>> bbc36ec41cd89d465443c96d8600eb5efbd60df4
