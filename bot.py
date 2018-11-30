@@ -13,6 +13,7 @@ import src.online_apis
 import src.Dota
 import src.RPG
 import src.kalash
+import src.Artifact
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -469,6 +470,34 @@ def get_dota_procircuit(bot, update):
                          text=str('Try again later'))
 
 
+def get_random_artifact_card(bot, update):
+    try:
+        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        random_card = src.Artifact.Artifact()
+        card = random_card.get_cards()
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=card)
+    except Exception as exception:
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
+        print(exception)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=str('Try again later'))
+
+
+def text_speech(bot, update, args):
+    try:
+        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_AUDIO)
+        handler = src.wikired.Wikired()
+        file = handler.tts(args)
+        bot.send_voice(chat_id=update.message.chat_id, voice=open('ukranian_audio.mp3', 'rb'))
+
+    except Exception as e:
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
+        print(e)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=str('Try again later'))
+
+
 def main():
     updater = Updater(config.updater, workers=4)
     dp = updater.dispatcher
@@ -502,6 +531,8 @@ def main():
     dp.add_handler(CommandHandler('wikired_speech', wikired_speech, ))
     dp.add_handler(CommandHandler("ukrania_today", ukrania_today))
     dp.add_handler(CommandHandler("get_dotaprocircuit", get_dota_procircuit))
+    dp.add_handler(CommandHandler("get_random_artifactcard", get_random_artifact_card))
+    dp.add_handler(CommandHandler("tts", text_speech, pass_args=True))
 
     dp.add_error_handler(error)
 

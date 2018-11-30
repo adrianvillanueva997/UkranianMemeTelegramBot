@@ -107,6 +107,14 @@ class Wikired():
         except Exception as e:
             print(e)
 
+    def tts(self, string):
+        try:
+            tts = gTTS(text=str(string), lang='es')
+            tts.save('ukranian_audio.mp3')
+            os.system("ukranian_audio.mp3")
+        except Exception as e:
+            print(e)
+
     def read_json(self, json_file):
         try:
             with open(json_file) as file:

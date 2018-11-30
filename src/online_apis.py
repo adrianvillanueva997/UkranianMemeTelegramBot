@@ -284,3 +284,4 @@ class OnlineApis():
         random_number = random.randint(0, len(card_links))
         print(card_links[random_number])
         return card_links[random_number]
+

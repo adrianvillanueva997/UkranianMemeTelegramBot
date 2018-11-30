@@ -83,6 +83,16 @@ def get_pro_dota_games():
 
 
 def get_dota_procircuit():
+    """Get Dota majors/minors from dota2.com/procircuit
+        Parameters
+        ----------
+        args : None
+
+        Returns
+        -------
+        String
+            String with all the information
+        """
     headers = {'User-Agent': 'Mozilla/5.0'}
     request = requests.get(r'https://www.dota2.com/procircuit', headers)
     html = request.content
@@ -174,6 +184,3 @@ def get_dota_procircuit():
 
     return message
 
-
-if __name__ == '__main__':
-    get_dota_procircuit()
