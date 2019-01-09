@@ -1,17 +1,17 @@
-import src.config as config
+import json
+import os
 import markovify
 from gtts import gTTS
-import os
-import json
+import src.config as config
 
 
-class Wikired():
+class Wikired:
 
     def text_to_speech(self):
         tweet = self.wiki_red()
         tts = gTTS(text=tweet, lang='es')
         tts.save('ukranian_audio.mp3')
-        os.system("/home/Xiao/telegrambot/ukranian_audio.mp3")
+        os.system("ukranian_audio.mp3")
         return tweet
 
     def insertTweetQuery(self, tweet):
@@ -48,7 +48,7 @@ class Wikired():
 
             """
         try:
-            model_json = self.read_json(r'/home/Xiao/telegrambot/telegramBot/src/models/model_wikired.json')
+            model_json = self.read_json(r'src/models/model_wikired.json')
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
             if tweet == None:
@@ -72,10 +72,33 @@ class Wikired():
 
             """
         try:
-            model_json = self.read_json(r'/home/Xiao/telegrambot/telegramBot/src/models/model_antena3.json')
+            model_json = self.read_json(r'src/models/model_antena3.json')
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
             if tweet == None:
+                return "try again later :)"
+            else:
+                return tweet
+        except Exception as e:
+            print(e)
+
+    def ukranian(self):
+        """Special thanks to Ukranian kalvos for giving me their chats. Using markov chains, this function makes a new tweet based on his tweets
+            Parameters
+            ----------
+            args : None
+
+            Returns
+            -------
+            String
+                Tweet
+
+            """
+        try:
+            model_json = self.read_json(r'src/models/model_ukranian.json')
+            reconstituted_model = markovify.NewlineText.from_json(model_json)
+            tweet = reconstituted_model.make_short_sentence(280)
+            if tweet is None:
                 return "try again later :)"
             else:
                 return tweet

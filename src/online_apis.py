@@ -8,7 +8,7 @@ import time
 from bs4 import BeautifulSoup
 
 
-class OnlineApis():
+class OnlineApis:
 
     def weather(self, args):
         """Connects to openWeather and returns the weather from given location

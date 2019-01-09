@@ -3,7 +3,7 @@ from random import randint
 import lib.py8chan as py8chan
 
 
-class EightChanHandler():
+class EightChanHandler:
     def __init__(self):
         self.chan_8_boards = ['pol', 'v', 'leftypol', 'b', 'tv', 'a', 'christian', 'tech', 'co', 'hgg', 'k', 'newsplus',
                               'r9k',

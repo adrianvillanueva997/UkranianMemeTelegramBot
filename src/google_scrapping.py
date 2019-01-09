@@ -3,7 +3,7 @@ import urllib
 import re
 
 
-class GoogleScrapper():
+class GoogleScrapper:
     def __init__(self, url):
         self.url = url
 

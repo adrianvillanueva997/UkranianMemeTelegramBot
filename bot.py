@@ -1,19 +1,19 @@
-import json
+import logging
 import random
 
-from telegram.ext import Updater, CommandHandler, run_async, CallbackQueryHandler
 import telegram.chataction
-import logging
-import src.config as config
-import src.four_chan
-import src.wikired
-import src.eight_chan
-import src.google_scrapping
-import src.online_apis
+from telegram.ext import Updater, CommandHandler, run_async, CallbackQueryHandler
+
+import src.Artifact
 import src.Dota
 import src.RPG
+import src.config as config
+import src.eight_chan
+import src.four_chan
+import src.google_scrapping
 import src.kalash
-import src.Artifact
+import src.online_apis
+import src.wikired
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -456,6 +456,20 @@ def ukrania_today(bot, update):
                          text=str('Try again later'))
 
 
+def ukranian(bot, update):
+    try:
+        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        handler = src.wikired.Wikired()
+        tweet = handler.ukranian()
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=tweet)
+    except Exception as exception:
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
+        print(exception)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=str('Try again later'))
+
+
 def get_dota_procircuit(bot, update):
     try:
         bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
@@ -532,6 +546,7 @@ def main():
     dp.add_handler(CommandHandler("ukrania_today", ukrania_today))
     dp.add_handler(CommandHandler("get_dotaprocircuit", get_dota_procircuit))
     dp.add_handler(CommandHandler("get_random_artifactcard", get_random_artifact_card))
+    dp.add_handler(CommandHandler("ukranian", ukranian))
     dp.add_handler(CommandHandler("tts", text_speech, pass_args=True))
 
     dp.add_error_handler(error)

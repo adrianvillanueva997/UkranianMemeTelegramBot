@@ -3,7 +3,7 @@ from random import randint
 import basc_py4chan
 
 
-class FourChanHandler():
+class FourChanHandler:
     def __init__(self):
         self.boards = ['3', 'a', 'aco', 'adv', 'an', 'asp', 'b', 'bant', 'biz', 'c', 'cgl', 'ck', 'cm', 'd', 'diy', 'e',
                        'f',
@@ -54,7 +54,8 @@ class FourChanHandler():
         random_thread = randint(0, (len(thread_ids) - 1))
         thread = board.get_thread(int(thread_ids[random_thread]))
         pictures = []
-        url = r'http://boards.4chan.org/'.__add__(str(query)).__add__('/thread/').__add__(str(thread_ids[random_thread]))
+        url = r'http://boards.4chan.org/'.__add__(str(query)).__add__('/thread/').__add__(
+            str(thread_ids[random_thread]))
         for f in thread.file_objects():
             pictures.append(f.file_url)
 

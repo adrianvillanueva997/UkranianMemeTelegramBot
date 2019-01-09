@@ -3,7 +3,7 @@ import MySQLdb
 import src.config as config
 
 
-class Kalash():
+class Kalash:
 
     def insert_betrayal(self, betrayal):
         try:
