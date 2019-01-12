@@ -1,7 +1,9 @@
 import json
 import os
+
 import markovify
 from gtts import gTTS
+
 import src.config as config
 
 
@@ -75,7 +77,7 @@ class Wikired:
             model_json = self.read_json(r'src/models/model_antena3.json')
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
-            if tweet == None:
+            if tweet is None:
                 return "try again later :)"
             else:
                 return tweet
@@ -101,6 +103,7 @@ class Wikired:
             if tweet is None:
                 return "try again later :)"
             else:
+                self.insertTweetQuery(tweet)
                 return tweet
         except Exception as e:
             print(e)
@@ -118,11 +121,11 @@ class Wikired:
 
              """
         try:
-            model_json = self.read_json(r'/home/Xiao/telegrambot/telegramBot/src/models/model_wikibab.json')
+            model_json = self.read_json(r'src/models/model_wikibab.json')
             reconstituted_model = markovify.NewlineText.from_json(model_json)
             tweet = reconstituted_model.make_short_sentence(280)
             print(tweet)
-            if tweet == None:
+            if tweet is None:
                 return "try again later :)"
             else:
                 self.insertTweetQuery(tweet)
