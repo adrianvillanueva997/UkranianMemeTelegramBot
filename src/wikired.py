@@ -1,10 +1,10 @@
 import json
 import os
-
-import markovify
-from gtts import gTTS
-
 import src.config as config
+import markovify
+
+from gtts import gTTS
+from sqlalchemy.sql import text
 
 
 class Wikired:
@@ -29,10 +29,8 @@ class Wikired:
             """
         try:
             with config.engine.connect() as con:
-                tweet.replace('\'', '\'\'')
-                tweet.replace('%', '%%')
-                tweet.replace('\"', '\"\"')
-                con.execute('INSERT INTO TwitterBot.Wikired_Query (Wikired_Query.TWEET) values (\"' + tweet + '\")')
+                query = text('INSERT INTO TwitterBot.Wikired_Query (Wikired_Query.TWEET) values (:_tweet)')
+                con.execute(query, _tweet=tweet)
                 print('tweet insertado: ' + tweet)
         except Exception as e:
             print(e)

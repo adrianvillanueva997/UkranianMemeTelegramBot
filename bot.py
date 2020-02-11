@@ -11,7 +11,6 @@ import src.config as config
 import src.eight_chan
 import src.four_chan
 import src.google_scrapping
-import src.kalash
 import src.online_apis
 import src.wikired
 
@@ -21,276 +20,281 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-def start(bot, update):
+def start(update, context):
     update.message.reply_text('Pues estoy funcionando')
 
 
-def help(bot, update):
-    update.message.reply_text(
-        'My commands are: /wikipedia , /locate , /board , /randomThread, /randomBoard ,/weather, /wikired, /quote')
+def help(update, context):
+    context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+    update.message.reply_text(text="Sigo vivo")
 
 
-def error(bot, update, error):
+def donate(update, context):
+    context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+    update.message.reply_text(text='paypal.me/thexiao77')
+
+
+def error(update, context, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 @run_async
-def joke(bot, update):
+def joke(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.online_apis.OnlineApis()
         text = handler.joke()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=text)
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=text)
     except Exception as e:
         print(e)
 
 
 @run_async
-def get_time_zone(bot, update, args):
+def get_time_zone(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        # bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.online_apis.OnlineApis()
-        data = handler.get_time_zone(args)
+        data = handler.get_time_zone(context.args[0])
         message = ('Location: ' + data['location'] +
                    '\nHour: ' + data['hour'] +
                    '\nZone Name: ' + data['zone_name'] +
                    '\nTime Zone: ' + data['time_zone'])
-        bot.send_message(chat_id=update.message.chat_id, text=message)
+        context.bot.send_message(chat_id=update.message.chat_id, text=message)
     except Exception as e:
         print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text='Location not found')
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text='Location not found')
 
 
 @run_async
-def send_location(bot, update, args):
+def send_location(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.online_apis.OnlineApis()
-        geodata = handler.get_coords(args)
-        print('{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        #handler = src.online_apis.OnlineApis()
+        #geodata = handler.get_coords(context.args[0])
+        #print('{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
 
-        bot.send_message(chat_id=update.message.chat_id,
-                         text='{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
-        bot.sendLocation(chat_id=update.message.chat_id, latitude=geodata['lat'], longitude=geodata['lng'])
+        #context.bot.send_message(chat_id=update.message.chat_id,
+         #                        text='{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
+        #context.bot.sendLocation(chat_id=update.message.chat_id, latitude=geodata['lat'], longitude=geodata['lng'])
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text='Aun no funciono')
 
     except Exception as exception:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text='Location not found')
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text='Location not found')
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
 
 
-def send_wikipedia(bot, update, args):
+def send_wikipedia(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.online_apis.OnlineApis()
-        article = handler.send_wikipedia(args)
-        bot.send_message(chat_id=update.message.chat_id, text=article.url)
+        article = handler.send_wikipedia(context.args[0])
+        context.bot.send_message(chat_id=update.message.chat_id, text=article.url)
     except Exception as exception:
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text='Search not found')
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text='Search not found')
         logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
-def check4_chan_board(bot, update, args):
+def check4_chan_board(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.four_chan.FourChanHandler()
-        message = handler.check4_chan_board(args)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=message)
+        message = handler.check4_chan_board(context.args[0])
+        update.send_message(chat_id=update.message.chat_id,
+                            text=message)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text='board not found')
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text='board not found')
 
 
 @run_async
-def random_board(bot, update):
+def random_board(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.four_chan.FourChanHandler()
         message, url = handler.random_board()
         print(message, url)
         if '.webm' not in url:
-            bot.send_photo(chat_id=update.message.chat_id, photo=url)
-            bot.send_message(chat_id=update.message.chat_id, text=message)
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=url)
+            context.bot.send_message(chat_id=update.message.chat_id, text=message)
         else:
-            bot.send_message(chat_id=update.message.chat_id, text=url)
-            bot.send_message(chat_id=update.message.chat_id, text=message)
+            context.bot.send_message(chat_id=update.message.chat_id, text=url)
+            context.bot.send_message(chat_id=update.message.chat_id, text=message)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=('board not found'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text='board not found')
 
 
 @run_async
-def weather(bot, update, args):
+def weather(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.online_apis.OnlineApis()
-        data = handler.weather(args)
-        update.message.reply_text(data)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        #handler = src.online_apis.OnlineApis()
+        #data = handler.weather(context.args[0])
+        update.message.reply_text("Hace un solecito de puta madre")
     except Exception as error:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str(error))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str(error))
 
 
-def wiki_red(bot, update):
+def wiki_red(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.wikired.Wikired()
         tweet = handler.wiki_red()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=tweet)
+        context.bot.send_message(chat_id=update.message.chat_id, text=tweet)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        update.message.reply_text(text=str('Try again later'))
 
 
-def wikibab(bot, update):
+def wikibab(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.wikired.Wikired()
         tweet = handler.wiki_bab()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=tweet)
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=tweet)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
 
 
 @run_async
-def random_8chan_booard(bot, update):
+def random_8chan_booard(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.eight_chan.EightChanHandler()
         message, url = handler.random_8_chan_board()
         print(message, url)
         if '.webm' not in url:
-            bot.send_photo(chat_id=update.message.chat_id, photo=url)
-            bot.send_message(chat_id=update.message.chat_id, text=message)
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=url)
+            context.bot.send_message(chat_id=update.message.chat_id, text=message)
         else:
-            bot.send_message(chat_id=update.message.chat_id, text=url)
-            bot.send_message(chat_id=update.message.chat_id, text=message)
+            context.bot.send_message(chat_id=update.message.chat_id, text=url)
+            context.bot.send_message(chat_id=update.message.chat_id, text=message)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=('board not found'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=('board not found'))
 
 
 @run_async
-def random8_chan_thread(bot, update, args):
+def random8_chan_thread(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.eight_chan.EightChanHandler()
-        message, url = handler.random8_chan_thread(args)
+        message, url = handler.random8_chan_thread(context.args[0])
         print(message, url)
         if '.webm' not in url:
-            bot.send_photo(chat_id=update.message.chat_id, photo=url)
-            bot.send_message(chat_id=update.message.chat_id, text=message)
+            context.bot.send_photo(chat_id=update.message.chat_id, photo=url)
+            context.bot.send_message(chat_id=update.message.chat_id, text=message)
         else:
-            bot.send_message(chat_id=update.message.chat_id, text=url)
-            bot.send_message(chat_id=update.message.chat_id, text=message)
+            context.bot.send_message(chat_id=update.message.chat_id, text=url)
+            context.bot.send_message(chat_id=update.message.chat_id, text=message)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=('board not found'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=('board not found'))
 
 
-def list_8_chan_boards(bot, update):
+def list_8_chan_boards(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.eight_chan.EightChanHandler()
         boards = handler.list_8_chan_boards()
-        bot.send_message(chat_id=update.message.chat_id, text=boards)
+        context.bot.send_message(chat_id=update.message.chat_id, text=boards)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=('board not found'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=('board not found'))
 
 
-def list4_chan_boards(bot, update):
+def list4_chan_boards(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.four_chan.FourChanHandler()
         boards = handler.list_4_chan_boards()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=boards)
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=boards)
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str(e))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str(e))
 
 
 @run_async
-def search_image(bot, update, args):
+def search_image(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.google_scrapping.GoogleScrapper(args)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        handler = src.google_scrapping.GoogleScrapper(context.args[0])
         picture = handler.search_image()
         update.message.reply_text(picture)
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str(e))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str(e))
 
 
 @run_async
-def get_pro_dota_games(bot, update):
+def get_pro_dota_games(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         games = src.Dota.get_pro_dota_games()
         for game in games:
-            bot.send_message(chat_id=update.message.chat_id, text=game)
+            context.bot.send_message(chat_id=update.message.chat_id, text=game)
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str(e))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str(e))
 
 
 @run_async
-def simpsons_quote(bot, update):
+def simpsons_quote(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.online_apis.OnlineApis()
         picture, quotes = handler.simpsons_quote()
-        bot.send_photo(chat_id=update.message.chat_id, photo=picture, caption=quotes)
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=picture, caption=quotes)
 
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str(e))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str(e))
 
 
-def roll_the_dice(bot, update, args):
+def roll_the_dice(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        number = src.RPG.roll_the_dice(args)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        number = src.RPG.roll_the_dice(context.args[0])
         update.message.reply_text(number)
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str(e))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str(e))
 
 
 @run_async
-def random_thread(bot, update):
+def random_thread(update, context):
     try:
         handler = src.four_chan.FourChanHandler()
         boards = handler.boards
@@ -325,45 +329,11 @@ def random_thread(bot, update):
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
 
 
-def add_kalash_betrayal(bot, update, args):
-    try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.kalash.Kalash()
-        status = handler.insert_betrayal(args)
-        if status == 1:
-            update.message.reply_text("Thanks for reporting it")
-        else:
-            update.message.reply_text("tu tontolculo no sabes ni reportar @DarkTrainer eso es ban")
-
-    except Exception as e:
-        update.message.reply_text("An error ocurred, try again later")
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
-        print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
-
-
-def show_betrayals(bot, update):
-    try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.kalash.Kalash()
-        betrayals = handler.show_betrayal()
-        print(len(betrayals))
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str(betrayals))
-
-    except Exception as e:
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
-        print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
-
-
-def chan_4_button(bot, update):
+def chan_4_button(update, context):
     try:
 
         query = update.callback_query
@@ -371,21 +341,21 @@ def chan_4_button(bot, update):
         print(query.data)
         handler = src.four_chan.FourChanHandler()
         message, url = handler.random_thread(query.data)
-        bot.edit_message_text(text="Selected option: {}".format(query.data) + '\n' + url + '\n' + message,
-                              chat_id=query.message.chat_id,
-                              message_id=query.message.message_id)
+        context.bot.edit_message_text(text="Selected option: {}".format(query.data) + '\n' + url + '\n' + message,
+                                      chat_id=query.message.chat_id,
+                                      message_id=query.message.message_id)
         return query.data
 
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
 
 
-def kalash_traidor(bot, update):
+def kalash_traidor(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         frases_kalash = ['Luego vuelvo.\n(Verano de algun año)', 'U L T R A I C I O N A D O',
                          'Hola chicos, echais un dota?', 'Quiero jugar nyx', 'kalash(traidor)', '*risa de urraca*',
                          'Me tenÃ©is manÃ­a', 'Red, echamos un rainbow?', 'Luego vuelvo. \n(No volverá¡)',
@@ -400,120 +370,105 @@ def kalash_traidor(bot, update):
                          'Echamos un payday 2? Venga chicos, que me lo instalo', 'puto gilipollas el bristleback',
                          '*risa descontrolada ante cualquier gilipollez*',
                          'Me instalo arch linux cada vez que enciendo el pc', 'install gentoo']
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=frases_kalash[random.randint(0, len(frases_kalash) - 1)])
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=frases_kalash[random.randint(0, len(frases_kalash) - 1)])
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
 
 
-def get_pollution(bot, update, args):
+def wikired_speech(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.online_apis.OnlineApis()
-        pollution_params = handler.get_pollution(args)
-        message = ''
-        for param in pollution_params:
-            message += (param + '\n')
-
-        update.message.reply_text(message)
-    except Exception as e:
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
-        print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
-
-
-def wikired_speech(bot, update):
-    try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.wikired.Wikired()
         tweet = handler.text_to_speech()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=tweet)
-        bot.send_audio(chat_id=update.message.chat_id, audio=open('/home/Xiao/telegrambot/ukranian_audio.mp3', 'rb'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=tweet)
+        context.bot.send_audio(chat_id=update.message.chat_id,
+                               audio=open('/home/Xiao/telegrambot/ukranian_audio.mp3', 'rb'))
 
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
 
 
-def ukrania_today(bot, update):
+def ukrania_today(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.wikired.Wikired()
         tweet = handler.ukrania_today()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=tweet)
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=tweet)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
 
 
-def ukranian(bot, update):
+def ukranian(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.wikired.Wikired()
         tweet = handler.ukranian()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=tweet)
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=tweet)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
 
 
-def get_dota_procircuit(bot, update):
+def get_dota_procircuit(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         tournaments = src.Dota.get_dota_procircuit()
 
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=tournaments)
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=tournaments)
     except Exception as exception:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
 
 
-def get_random_artifact_card(bot, update):
+def text_speech(update, context):
     try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        random_card = src.Artifact.Artifact()
-        card = random_card.get_cards()
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=card)
-    except Exception as exception:
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
-        print(exception)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
-
-
-def text_speech(bot, update, args):
-    try:
-        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_AUDIO)
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_AUDIO)
         handler = src.wikired.Wikired()
-        file = handler.tts(args)
-        bot.send_voice(chat_id=update.message.chat_id, voice=open('ukranian_audio.mp3', 'rb'))
+        file = handler.tts(context.args[0])
+        context.bot.send_voice(chat_id=update.message.chat_id, voice=open('ukranian_audio.mp3', 'rb'))
 
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         print(e)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=str('Try again later'))
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=str('Try again later'))
+
+
+def call(update, context):
+    try:
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_AUDIO)
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text='༼ つ ◕_◕ ༽つ @DarkTrainer, @Dvdgg, @LilNarwhal, @thexiao77༼ つ ◕_◕ ༽つ')
+        urls = []
+        with open('src/image_urls.txt', 'r', encoding='utf-8') as file:
+            for data in file:
+                urls.append(data)
+        rand = random.randint(0, len(urls))
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=urls[rand])
+    except Exception as e:
+        print(e)
 
 
 def main():
-    updater = Updater(config.updater, workers=4)
+    updater = Updater(config.updater, workers=4, use_context=True)
     dp = updater.dispatcher
     start_handler = CommandHandler('start', start)
 
@@ -537,16 +492,14 @@ def main():
     dp.add_handler(CommandHandler("simpsonquote", simpsons_quote))
     dp.add_handler(CommandHandler("roll", roll_the_dice, pass_args=True))
     dp.add_handler(CommandHandler("kebab", wikibab))
+    dp.add_handler(CommandHandler("call", call))
     dp.add_handler(CommandHandler('kalash', kalash_traidor))
-    dp.add_handler(CommandHandler('add_betrayal', add_kalash_betrayal, pass_args=True))
-    dp.add_handler(CommandHandler('show_betrayal', show_betrayals))
     dp.add_handler(CallbackQueryHandler(chan_4_button))
-    dp.add_handler(CommandHandler('get_pollution', get_pollution, pass_args=True))
     dp.add_handler(CommandHandler('wikired_speech', wikired_speech, ))
     dp.add_handler(CommandHandler("ukrania_today", ukrania_today))
     dp.add_handler(CommandHandler("get_dotaprocircuit", get_dota_procircuit))
-    dp.add_handler(CommandHandler("get_random_artifactcard", get_random_artifact_card))
     dp.add_handler(CommandHandler("ukranian", ukranian))
+    dp.add_handler(CommandHandler("donate", donate))
     dp.add_handler(CommandHandler("tts", text_speech, pass_args=True))
 
     dp.add_error_handler(error)

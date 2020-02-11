@@ -1,2 +1,8 @@
 
-src/config\.py
+.env
+
+.idea/
+
+src/__pycache__/
+venv/
+ukranian_audio.mp3

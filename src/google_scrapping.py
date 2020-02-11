@@ -106,4 +106,5 @@ class GoogleScrapper:
                 picture = self.find_error_pic()
             else:
                 picture = self.get_random_picture(urls)
+            picture = picture.replace('\\', '')
             return picture

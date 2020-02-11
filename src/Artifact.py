@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import random
 
 
-class Artifact():
+class Artifact:
     def __init__(self):
         pass
 
