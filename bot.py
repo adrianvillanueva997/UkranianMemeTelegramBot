@@ -86,7 +86,7 @@ def send_location(update, context):
         # context.bot.send_message(chat_id=update.message.chat_id,
         #                        text='{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
         # context.bot.sendLocation(chat_id=update.message.chat_id, latitude=geodata['lat'], longitude=geodata['lng'])
-        # context.bot.send_message(chat_id=update.message.chat_id,
+        context.bot.send_message(chat_id=update.message.chat_id,
         #                         text='Aun no funciono')
 
     except Exception as exception:
@@ -100,7 +100,8 @@ def send_wikipedia(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         handler = src.online_apis.OnlineApis()
-        article = handler.send_wikipedia(context.args[0])
+        args = get_args_as_string(context.args)
+        article = handler.send_wikipedia(args)
         context.bot.send_message(chat_id=update.message.chat_id, text=article.url)
     except Exception as exception:
         print(exception)
@@ -262,7 +263,8 @@ def list4_chan_boards(update, context):
 def search_image(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.google_scrapping.GoogleScrapper(context.args[0])
+        args = get_args_as_string(context.args)
+        handler = src.google_scrapping.GoogleScrapper(args)
         picture = handler.search_image()
         update.message.reply_text(picture)
     except Exception as e:
@@ -447,7 +449,8 @@ def text_speech(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_AUDIO)
         handler = src.wikired.Wikired()
-        file = handler.tts(context.args[0])
+        args = get_args_as_string(context.args)
+        file = handler.tts(args)
         context.bot.send_voice(chat_id=update.message.chat_id, voice=open('ukranian_audio.mp3', 'rb'))
 
     except Exception as e:
@@ -461,7 +464,7 @@ def call(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_AUDIO)
         context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='@DarkTrainer, @Dvdgg, @LilNarwhal, @thexiao77')
+                                 text='@DarkTrainer, @Dvdgg, @LilNarwhal, @thexiao77 D O T A')
         urls = []
         with open('src/images/image_urls.txt', 'r', encoding='utf-8') as file:
             for data in file:
