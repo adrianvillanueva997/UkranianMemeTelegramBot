@@ -1,5 +1,7 @@
 import random
 
+from pyowm import OWM
+
 import src.config as config
 import requests
 import wikipedia
@@ -10,7 +12,8 @@ from bs4 import BeautifulSoup
 
 class OnlineApis:
 
-    def weather(self, args):
+    @staticmethod
+    def weather(args):
         """Connects to openWeather and returns the weather from given location
             Parameters
             ----------
@@ -22,28 +25,17 @@ class OnlineApis:
             String
                 Data extracted from JSON
             """
-        city = ' '.join(args)
-        # print(city)
-        base_url = config.OPbase_url
-        api_key = config.OPapi_key
-        query = base_url + '?q=%s&units=metric&APPID=%s' % (city, api_key)
-        response = requests.get(query)
-        if response.status_code != 200:
-            print('error')
-            return 'Please try again later'
-        else:
-            weather_data = response.json()
-            # print(weather_data)
-            location = weather_data
-            data = ('City: ' + str(location['name'] +
-                                   '\nTemperature: ' + str(
-                location['main']['temp']) + 'ºC' +
-                                   '\nHumidity: ' + str(
-                location['main']['humidity']) + '%' +
-                                   '\nPressure: ' + str(
-                location['main']['pressure']) + 'hPA' +
-                                   '\nClouds: ' + str(location['clouds']['all']) + ' %'))
-            return data
+        owm = OWM(config.OPapi_key)
+        obs = owm.weather_at_place(args)
+        w = obs.get_weather()
+        data = {
+            'humidity': w.get_humidity()
+            , 'temperature': w.get_temperature('celsius')
+            , 'wind': w.get_wind()
+            , 'clouds': w.get_clouds()
+            , 'pressure': w.get_pressure()
+        }
+        return data
 
     def simpsons_quote(self):
         """Gets a random quote + caption from the largest Simpsons database

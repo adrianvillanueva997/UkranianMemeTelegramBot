@@ -5,29 +5,17 @@
 
 ## Installation
 
-OS X & Linux:
-
-```sh
-apt-get install python3.6
-apt-get install pip3
-pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
+Just make sure you have python 3.7x or more and install the following:
 ```
-
-Windows:
-Just get python 3.6 from [here](https://www.python.org/downloads/release/python-366/)
-```sh
-pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
+pip3 install -r requirements.txt
 ```
 
 ## Release History
-
-* 2.0.1
-    * Fixed Null Kebab and Wikired
-* 2.1
-	* Added inline keyboard for randomthread
-	* Kalash(traitor) added
-	* Small fixes and optimization tweaks
-	* Added RPG module (Roll the dice)
+* 3.0
+    * Reworked bot to make it work with the new telegram api
+    * Reworked some commands (weather, for example and donate)
+    * Optimization stuff
+    * Added .env support
 * 2.2
 	* Reworked dota 2 live games, now it uses opendota api instead of valve's
 	* Added support to get Dota Pro Circuit minor- major schedeule
@@ -36,6 +24,15 @@ pip3 install markovify,dota2api,requests,basc_py4chan,wikipedia,sqlalchemy
 	* Wikired, kebab and ukrania today read the data from models instead of generating a new model with each call.
 	* Optimization stuff
 	* Some fixes
+* 2.1
+    * Added inline keyboard for randomthread
+    * Kalash(traitor) added
+    * Small fixes and optimization tweaks
+    * Added RPG module (Roll the dice)
+* 2.0.1
+    * Fixed Null Kebab and Wikired
+
+
 
 
 ## Meta

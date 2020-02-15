@@ -20,6 +20,13 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
+def get_args_as_string(args):
+    string = ''
+    for arg in args:
+        string += arg + ' '
+    return string
+
+
 def start(update, context):
     update.message.reply_text('Pues estoy funcionando')
 
@@ -71,15 +78,16 @@ def get_time_zone(update, context):
 def send_location(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        #handler = src.online_apis.OnlineApis()
-        #geodata = handler.get_coords(context.args[0])
-        #print('{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
+        # print(context.args[0])
+        # handler = src.online_apis.OnlineApis()
+        # geodata = handler.get_coords(context.args[0])
+        # print('{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
 
-        #context.bot.send_message(chat_id=update.message.chat_id,
-         #                        text='{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
-        #context.bot.sendLocation(chat_id=update.message.chat_id, latitude=geodata['lat'], longitude=geodata['lng'])
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='Aun no funciono')
+        # context.bot.send_message(chat_id=update.message.chat_id,
+        #                        text='{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
+        # context.bot.sendLocation(chat_id=update.message.chat_id, latitude=geodata['lat'], longitude=geodata['lng'])
+        # context.bot.send_message(chat_id=update.message.chat_id,
+        #                         text='Aun no funciono')
 
     except Exception as exception:
         context.bot.send_message(chat_id=update.message.chat_id,
@@ -139,9 +147,19 @@ def random_board(update, context):
 def weather(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        #handler = src.online_apis.OnlineApis()
-        #data = handler.weather(context.args[0])
-        update.message.reply_text("Hace un solecito de puta madre")
+        handler = src.online_apis.OnlineApis()
+        args = get_args_as_string(context.args)
+        data = handler.weather(args)
+        print(data)
+        message = f'Location: {args} \n' \
+                  f'Humidity: {data["humidity"]}% \n' \
+                  f'Temperature (max): {data["temperature"]["temp_max"]} ºC \n' \
+                  f'Temperature (now): {data["temperature"]["temp"]} ºC \n' \
+                  f'Temperature (min): {data["temperature"]["temp_min"]} ºC \n' \
+                  f'Wind: {data["wind"]["speed"]} m/s \n' \
+                  f'Clouds: {data["clouds"]} % \n' \
+                  f'Pressure: {data["pressure"]["press"]} hPa'
+        update.message.reply_text(message)
     except Exception as error:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
         context.bot.send_message(chat_id=update.message.chat_id,
@@ -356,20 +374,7 @@ def chan_4_button(update, context):
 def kalash_traidor(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        frases_kalash = ['Luego vuelvo.\n(Verano de algun año)', 'U L T R A I C I O N A D O',
-                         'Hola chicos, echais un dota?', 'Quiero jugar nyx', 'kalash(traidor)', '*risa de urraca*',
-                         'Me tenÃ©is manÃ­a', 'Red, echamos un rainbow?', 'Luego vuelvo. \n(No volverá¡)',
-                         'El PUBG es una mierda\n\n*Kalash juega al PUBG*',
-                         'Mis amigos me han traicionado por el Fortnite',
-                         'Ahora vuelvo \n*Vuelve a la 1 de la mañana cuando ya nos vamos todos*',
-                         'Red, bajate el PayDay 2 que jugamos. \n*9 meses después, Red desinstala el PayDay 2 sin haber videojugado*',
-                         'Kalash T\'as picat \nKalash: Comeme los huevos',
-                         'La paella es comida, a diferencia del durum', 'El durum es una mierda',
-                         'Escuchate el album de Unpluged de Nirvana', 'Dejad de meteros con Kurt Cobain, pobrecito',
-                         'Dejad de meteros conmigo', 'La nación valenciana',
-                         'Echamos un payday 2? Venga chicos, que me lo instalo', 'puto gilipollas el bristleback',
-                         '*risa descontrolada ante cualquier gilipollez*',
-                         'Me instalo arch linux cada vez que enciendo el pc', 'install gentoo']
+        frases_kalash = ['U L T R A I C I O N A D O']
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text=frases_kalash[random.randint(0, len(frases_kalash) - 1)])
     except Exception as e:
@@ -387,7 +392,7 @@ def wikired_speech(update, context):
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text=tweet)
         context.bot.send_audio(chat_id=update.message.chat_id,
-                               audio=open('/home/Xiao/telegrambot/ukranian_audio.mp3', 'rb'))
+                               audio=open('ukranian_audio.mp3', 'rb'))
 
     except Exception as e:
         logger.warning('Update "%s" caused error "%s"' % (update, error))
@@ -456,9 +461,9 @@ def call(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_AUDIO)
         context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='༼ つ ◕_◕ ༽つ @DarkTrainer, @Dvdgg, @LilNarwhal, @thexiao77༼ つ ◕_◕ ༽つ')
+                                 text='@DarkTrainer, @Dvdgg, @LilNarwhal, @thexiao77')
         urls = []
-        with open('src/image_urls.txt', 'r', encoding='utf-8') as file:
+        with open('src/images/image_urls.txt', 'r', encoding='utf-8') as file:
             for data in file:
                 urls.append(data)
         rand = random.randint(0, len(urls))
