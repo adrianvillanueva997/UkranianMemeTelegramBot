@@ -4,8 +4,8 @@ certifi==2019.11.28
 cffi==1.14.3
 chardet==3.0.4
 Click==7.1.2
-cryptography==2.9.2
-decorator==4.4.1
+cryptography==2.8
+decorator==4.4.2
 future==0.18.2
 geojson==2.5.0
 gTTS==2.1.1
