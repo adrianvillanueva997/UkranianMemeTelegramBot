@@ -14,7 +14,7 @@ markovify==0.8.3
 idna==2.10
 mysqlclient==1.4.6
 pkg-resources==0.0.0
-pycparser==2.19
+pycparser==2.20
 pyowm==2.10.0
 python-dotenv==0.11.0
 python-telegram-bot==12.4.2
