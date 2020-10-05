@@ -15,7 +15,7 @@ idna==2.10
 mysqlclient==1.4.6
 pkg-resources==0.0.0
 pycparser==2.20
-pyowm==2.10.0
+pyowm==3.1.1
 python-dotenv==0.14.0
 python-telegram-bot==12.8
 requests==2.24.0
