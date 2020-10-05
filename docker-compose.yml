@@ -1,0 +1,16 @@
+version: '3'
+services:
+  bot:
+    restart: unless-stopped
+    container_name: telegram_ukranian
+    build: .
+    networks: 
+      - bots
+      - backend
+networks: 
+  bots:
+    external: true
+  backend:
+    external: true
+
+
