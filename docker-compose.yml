@@ -2,8 +2,8 @@ version: '3'
 services:
   bot:
     restart: unless-stopped
+    image: ukranian_bot
     container_name: telegram_ukranian
-    build: .
     networks: 
       - bots
       - backend
