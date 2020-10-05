@@ -37,19 +37,6 @@ jobs:
       # the head of the pull request instead of the merge commit.
       - run: git checkout HEAD^2
         if: ${{ github.event_name == 'pull_request' }}
-      - name: Lint code
-        uses: actions/setup-python@v1
-        with:
-          python-version: "3.8"
-      - name: lint
-        uses: ricardochaves/python-lint@v1.3.0
-        with:
-            use-pylint: false
-            use-pycodestyle: false #this is annoying as fuck
-            use-flake8: true
-            use-black: false
-            use-mypy: true
-            use-isort: false
         
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
