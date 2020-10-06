@@ -1,3 +1,5 @@
+[![Deployment Actions Status](https://github.com/adrianvillanueva997/UkranianMemeTelegramBot/workflows/Deployment/badge.svg)](https://github.com/adrianvillanueva997/UkranianMemeTelegramBot/actions)
+
 # UkranianMemeTelegramBot
 > Telegram [bot](https://t.me/xiao_bot) with tons of useful commands
 
