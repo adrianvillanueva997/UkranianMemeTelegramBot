@@ -74,28 +74,6 @@ def get_time_zone(update, context):
                                  text='Location not found')
 
 
-@run_async
-def send_location(update, context):
-    try:
-        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        # print(context.args[0])
-        # handler = src.online_apis.OnlineApis()
-        # geodata = handler.get_coords(context.args[0])
-        # print('{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
-
-        # context.bot.send_message(chat_id=update.message.chat_id,
-        #                        text='{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
-        # context.bot.sendLocation(chat_id=update.message.chat_id, latitude=geodata['lat'], longitude=geodata['lng'])
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='Aun no funciono')
-
-    except Exception as exception:
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='Location not found')
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
-        print(exception)
-
-
 def send_wikipedia(update, context):
     try:
         context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
@@ -498,7 +476,6 @@ def main():
 
     dp.add_handler(start_handler)
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("locate", send_location, pass_args=True))
     dp.add_handler(CommandHandler("wikipedia", send_wikipedia, pass_args=True))
     dp.add_handler(CommandHandler("board", check4_chan_board, pass_args=True))
     dp.add_handler(CommandHandler("randomBoard", random_board))
