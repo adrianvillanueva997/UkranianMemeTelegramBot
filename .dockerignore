@@ -1,0 +1,8 @@
+venv
+.github
+.idea
+.whitesource
+docker-compose.yml
+LICENSE
+README.md
+renovate.json
