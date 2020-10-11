@@ -28,6 +28,7 @@ class OnlineApis:
         owm = OWM(config.OPapi_key)
         obs = owm.weather_at_place(args)
         w = obs.get_weather()
+        # reg = owm.city_id_registry()
         data = {
             'humidity': w.get_humidity()
             , 'temperature': w.get_temperature('celsius')

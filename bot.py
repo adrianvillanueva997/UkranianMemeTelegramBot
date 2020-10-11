@@ -87,7 +87,7 @@ def send_location(update, context):
         #                        text='{address}. (lat, lng) = ({lat}, {lng})'.format(**geodata))
         # context.bot.sendLocation(chat_id=update.message.chat_id, latitude=geodata['lat'], longitude=geodata['lng'])
         context.bot.send_message(chat_id=update.message.chat_id,
-        #                         text='Aun no funciono')
+                                 text='Aun no funciono')
 
     except Exception as exception:
         context.bot.send_message(chat_id=update.message.chat_id,
@@ -462,15 +462,31 @@ def text_speech(update, context):
 
 def call(update, context):
     try:
-        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_AUDIO)
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='@DarkTrainer, @Dvdgg, @LilNarwhal, @thexiao77 D O T A')
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         urls = []
         with open('src/images/image_urls.txt', 'r', encoding='utf-8') as file:
             for data in file:
                 urls.append(data)
-        rand = random.randint(0, len(urls))
-        context.bot.send_photo(chat_id=update.message.chat_id, photo=urls[rand])
+        rand = random.randint(0, len(urls) - 1)
+        handler = src.wikired.Wikired()
+        copypasta = handler.dota_pasta()
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=urls[rand],
+                               caption=f'(DOTO) @DarkTrainer, @Dvdgg, @LilNarwhal, @thexiao77,@SanZ97xX, @JoseAwe {copypasta}')
+    except Exception as e:
+        print(e)
+
+
+def cs(update, context):
+    try:
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        urls = []
+        with open('src/images/csgo.txt', 'r', encoding='utf-8') as file:
+            for data in file:
+                urls.append(data)
+        rand = random.randint(0, len(urls) - 1)
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=urls[rand],
+                               caption=f'(CSGO) @DarkTrainer, @LilNarwhal, '
+                                       f'@thexiao77,@txc450, @JoseAwe TIRITOS PIUM PIUM BANG BANG ')
     except Exception as e:
         print(e)
 
@@ -501,6 +517,7 @@ def main():
     dp.add_handler(CommandHandler("roll", roll_the_dice, pass_args=True))
     dp.add_handler(CommandHandler("kebab", wikibab))
     dp.add_handler(CommandHandler("call", call))
+    dp.add_handler(CommandHandler("cs", cs))
     dp.add_handler(CommandHandler('kalash', kalash_traidor))
     dp.add_handler(CallbackQueryHandler(chan_4_button))
     dp.add_handler(CommandHandler('wikired_speech', wikired_speech, ))

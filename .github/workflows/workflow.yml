@@ -37,7 +37,7 @@ jobs:
       # the head of the pull request instead of the merge commit.
       - run: git checkout HEAD^2
         if: ${{ github.event_name == 'pull_request' }}
-        
+
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
@@ -49,3 +49,18 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
+      - name: Remote deployment
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          username: ${{ secrets.USERNAME }}
+          script: |
+            cd UkranianMemeTelegramBot
+            docker-compose down
+            docker image rm telegram_ukranian
+            git pull
+            docker build -t telegram_ukranian .
+            docker rmi $(docker images -f "dangling=true" -q)
+            docker-compose up -d

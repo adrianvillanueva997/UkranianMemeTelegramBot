@@ -131,6 +131,19 @@ class Wikired:
         except Exception as e:
             print(e)
 
+    def dota_pasta(self):
+        try:
+            model_json = self.read_json(r'src/models/model_dota_copypasta.json')
+            reconstituted_model = markovify.NewlineText.from_json(model_json)
+            tweet = reconstituted_model.make_short_sentence(280)
+            if tweet is None:
+                return "try again later :)"
+            else:
+                # self.insertTweetQuery(tweet)
+                return str(tweet)
+        except Exception as e:
+            print(e)
+
     def tts(self, string):
         try:
             tts = gTTS(text=str(string), lang='es')
