@@ -8,7 +8,6 @@ import src.Artifact
 import src.Dota
 import src.RPG
 import src.config as config
-import src.eight_chan
 import src.four_chan
 import src.google_scrapping
 import src.online_apis
@@ -169,59 +168,6 @@ def wikibab(update, context):
         print(exception)
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text=str('Try again later'))
-
-
-@run_async
-def random_8chan_booard(update, context):
-    try:
-        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.eight_chan.EightChanHandler()
-        message, url = handler.random_8_chan_board()
-        print(message, url)
-        if '.webm' not in url:
-            context.bot.send_photo(chat_id=update.message.chat_id, photo=url)
-            context.bot.send_message(chat_id=update.message.chat_id, text=message)
-        else:
-            context.bot.send_message(chat_id=update.message.chat_id, text=url)
-            context.bot.send_message(chat_id=update.message.chat_id, text=message)
-    except Exception as exception:
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
-        print(exception)
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text=('board not found'))
-
-
-@run_async
-def random8_chan_thread(update, context):
-    try:
-        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.eight_chan.EightChanHandler()
-        message, url = handler.random8_chan_thread(context.args[0])
-        print(message, url)
-        if '.webm' not in url:
-            context.bot.send_photo(chat_id=update.message.chat_id, photo=url)
-            context.bot.send_message(chat_id=update.message.chat_id, text=message)
-        else:
-            context.bot.send_message(chat_id=update.message.chat_id, text=url)
-            context.bot.send_message(chat_id=update.message.chat_id, text=message)
-    except Exception as exception:
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
-        print(exception)
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text=('board not found'))
-
-
-def list_8_chan_boards(update, context):
-    try:
-        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-        handler = src.eight_chan.EightChanHandler()
-        boards = handler.list_8_chan_boards()
-        context.bot.send_message(chat_id=update.message.chat_id, text=boards)
-    except Exception as exception:
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
-        print(exception)
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text=('board not found'))
 
 
 def list4_chan_boards(update, context):
@@ -482,10 +428,7 @@ def main():
     dp.add_handler(CommandHandler("randomThread", random_thread))
     dp.add_handler(CommandHandler("weather", weather, pass_args=True))
     dp.add_handler(CommandHandler("wikired", wiki_red))
-    dp.add_handler(CommandHandler("8chanBoard", random_8chan_booard))
-    dp.add_handler(CommandHandler("8chanThread", random8_chan_thread, pass_args=True))
     dp.add_handler(CommandHandler("4chanboards", list4_chan_boards))
-    dp.add_handler(CommandHandler("8chanboards", list_8_chan_boards))
     dp.add_handler(CommandHandler("get", search_image, pass_args=True, pass_user_data=updater.last_update_id))
     dp.add_handler(CommandHandler("dotaprogames", get_pro_dota_games))
     dp.add_handler(CommandHandler("getTimeZone", get_time_zone, pass_args=True))
