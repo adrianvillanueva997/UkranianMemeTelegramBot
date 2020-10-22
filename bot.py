@@ -415,6 +415,15 @@ def cs(update, context):
         print(e)
 
 
+def blessing(update, context):
+    try:
+        context.bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.RECORD_VIDEO)
+        context.bot.send_video(chat_id=update.message.chat_id, video=(open('dorime.mp4', 'rb')),
+                               supports_streaming=True, caption="Has sido bleseado")
+    except Exception as e:
+        print(e)
+
+
 def main():
     updater = Updater(config.updater, workers=4, use_context=True)
     dp = updater.dispatcher
@@ -444,6 +453,7 @@ def main():
     dp.add_handler(CommandHandler("ukrania_today", ukrania_today))
     dp.add_handler(CommandHandler("get_dotaprocircuit", get_dota_procircuit))
     dp.add_handler(CommandHandler("ukranian", ukranian))
+    dp.add_handler(CommandHandler("blessing", blessing))
     dp.add_handler(CommandHandler("donate", donate))
     dp.add_handler(CommandHandler("tts", text_speech, pass_args=True))
 
