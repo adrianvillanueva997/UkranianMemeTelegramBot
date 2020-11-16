@@ -410,7 +410,7 @@ def cs(update, context):
         rand = random.randint(0, len(urls) - 1)
         context.bot.send_photo(chat_id=update.message.chat_id, photo=urls[rand],
                                caption=f'(CSGO) @DarkTrainer, @LilNarwhal, '
-                                       f'@thexiao77,@txc450, @JoseAwe, @REDMSR TIRITOS PIUM PIUM BANG BANG ')
+                                       f'@thexiao77,@txc450, @JoseAwe, @REDMSR, @DavasJoe TIRITOS PIUM PIUM BANG BANG ')
     except Exception as e:
         print(e)
 
