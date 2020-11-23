@@ -395,7 +395,7 @@ def call(update, context):
         handler = src.wikired.Wikired()
         copypasta = handler.dota_pasta()
         context.bot.send_photo(chat_id=update.message.chat_id, photo=urls[rand],
-                               caption=f'(DOTO) @DarkTrainer, @Dvdgg, @LilNarwhal, @thexiao77,@SanZ97xX {copypasta}')
+                               caption=f'(DOTO) @Dvdgg, @LilNarwhal, @thexiao77,@SanZ97xX, @DarkTrainer (calvo) {copypasta}')
     except Exception as e:
         print(e)
 
@@ -409,8 +409,8 @@ def cs(update, context):
                 urls.append(data)
         rand = random.randint(0, len(urls) - 1)
         context.bot.send_photo(chat_id=update.message.chat_id, photo=urls[rand],
-                               caption=f'(CSGO) @DarkTrainer, @LilNarwhal, '
-                                       f'@thexiao77,@txc450, @JoseAwe, @REDMSR, @DavasJoe TIRITOS PIUM PIUM BANG BANG ')
+                               caption=f'(CSGO) @dArKtRaInEr, @LilNarwhal, '
+                                       f'@thexiao77,@txc450, @JoseAwe, @REDMSR, @DavasJoe, @THEDRDVD TIRITOS PIUM PIUM BANG BANG ')
     except Exception as e:
         print(e)
 
